@@ -3,7 +3,8 @@
   "description": "Base Level Extension",
   "permissions": [
     "activeTab",
-    "scripting"
+    "scripting",
+    "downloads"
   ],
   "host_permissions": [
     "<all_urls>"

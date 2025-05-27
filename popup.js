@@ -1,10 +1,49 @@
+function cleanFilename(filename) {
+    // Pattern 1: Random hex string + underscore (like your example)
+    let match = filename.match(/^[a-f0-9]{16,}_(.+)$/i);
+    if (match) return match[1];
+
+    // Pattern 2: Random alphanumeric + underscore
+    match = filename.match(/^[a-zA-Z0-9]{10,}_(.+)$/i);
+    if (match) return match[1];
+
+    // Pattern 3: UUID-like pattern + underscore
+    match = filename.match(/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}_(.+)$/i);
+    if (match) return match[1];
+
+    // Return original if no pattern matches
+    return filename;
+}
+
 function getFileName(url) {
     // https://example.com/images/cool-picture.jpg?size=large#top
     try {
         const cleanUrl = url.split('?')[0].split('#')[0];
-        return decodeURIComponent(cleanUrl.substring(cleanUrl.lastIndexOf('/') + 1)) || '(no file found)';
+        return cleanFilename(decodeURIComponent(cleanUrl.substring(cleanUrl.lastIndexOf('/') + 1))) || '(no file found)';
     } catch (e) {
         return '(no file found)';
+    }
+}
+
+function downloadWithExactName(blobOrUrl, fileName) {
+    console.log("123",blobOrUrl,fileName)
+    // If passed a Blob, create a temporary URL
+    const url =
+        blobOrUrl instanceof Blob
+            ? URL.createObjectURL(blobOrUrl)
+            : blobOrUrl;
+
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    // If we created a blob URL, revoke it after a moment
+    if (blobOrUrl instanceof Blob) {
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
 }
 
@@ -63,28 +102,28 @@ function renderOverviewTab() {
     if (filtered.length) {
         filtered.forEach(item => {
             const {src, fileName, sizeText} = item;
+            const updatedFileName = cleanFilename(fileName);
             const div = document.createElement('div');
             div.className = 'img-item';
 
             const img = document.createElement('img');
             img.src = src;
-            img.alt = fileName;
+            img.alt = updatedFileName;
 
             const label = document.createElement('div');
             label.className = 'img-label';
-            label.textContent = `${fileName}\n${sizeText}`;
+            label.textContent = `${updatedFileName}\n${sizeText}`;
 
             const downloadBtn = document.createElement('button');
             downloadBtn.className = 'download-btn';
             downloadBtn.textContent = 'Download';
-            downloadBtn.onclick = () => {
-                const link = document.createElement('a');
-                link.href = src;
-                link.download = fileName;
-                document.body.appendChild(link);
-                link.click();
-                setTimeout(() => document.body.removeChild(link), 100);
+            downloadBtn.onclick = () =>{
+                fetch(src)
+                    .then(r => r.blob())
+                    .then(blob => downloadWithExactName(blob, cleanFilename(fileName)))
+                    .catch(err => console.error('Download failed:', err));
             };
+
 
             div.appendChild(img);
             div.appendChild(label);
@@ -122,7 +161,6 @@ function renderImagesTab() {
         // Preview cell
         const tdPreview = document.createElement('td');
         const img = document.createElement('img');
-        console.log("item", item);
         img.src = item.src;
         img.alt = item.alt || '';
         img.title = item.title || '';
@@ -150,6 +188,7 @@ function renderImagesTab() {
         tbody.appendChild(tr);
     });
 }
+
 // Fetch data and display images
 document.getElementById('fetchData').addEventListener('click', async () => {
     let [tab] = await chrome.tabs.query({active: true, currentWindow: true});
@@ -211,6 +250,7 @@ document.getElementById('downloadZipBtn').addEventListener('click', async () => 
             while (folder.files[fileName]) {
                 fileName = "_" + fileName;
             }
+            console.log(`Downloading ${fileName}`);
             folder.file(fileName, blob);
         } catch (e) {
             // Skip failed downloads
