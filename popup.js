@@ -26,7 +26,6 @@ function getFileName(url) {
 }
 
 function downloadWithExactName(blobOrUrl, fileName) {
-    console.log("123",blobOrUrl,fileName)
     // If passed a Blob, create a temporary URL
     const url =
         blobOrUrl instanceof Blob
@@ -250,7 +249,6 @@ document.getElementById('downloadZipBtn').addEventListener('click', async () => 
             while (folder.files[fileName]) {
                 fileName = "_" + fileName;
             }
-            console.log(`Downloading ${fileName}`);
             folder.file(fileName, blob);
         } catch (e) {
             // Skip failed downloads
@@ -259,7 +257,6 @@ document.getElementById('downloadZipBtn').addEventListener('click', async () => 
 
     // Generate and download the ZIP
     zip.generateAsync({type: "blob"}).then(function (content) {
-        console.log("con++", content);
         const url = URL.createObjectURL(content);
         const a = document.createElement('a');
         a.href = url;
