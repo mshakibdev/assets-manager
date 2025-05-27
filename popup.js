@@ -1,5 +1,4 @@
 function getFileName(url) {
-    console.log("url-split", url);
     // https://example.com/images/cool-picture.jpg?size=large#top
     try {
         const cleanUrl = url.split('?')[0].split('#')[0];
@@ -59,7 +58,7 @@ function renderImages() {
     filtered = filtered.slice().sort((a, b) => sortOrder === 'asc' ? a.size - b.size : b.size - a.size);
 
     // Render to DOM
-    const imagesDiv = document.getElementById('images');
+    const imagesDiv = document.getElementById('imagesTableBody');
     imagesDiv.innerHTML = '';
     if (filtered.length) {
         filtered.forEach(item => {
@@ -180,5 +179,33 @@ document.getElementById('downloadZipBtn').addEventListener('click', async () => 
 document.getElementById('fileTypeFilter').addEventListener('change', renderImages);
 document.getElementById('sortOrder').addEventListener('change', renderImages);
 
+
+// Tab logic
+const tabs = {
+    overviewBtn:   document.getElementById('tab-overview-btn'),
+    imagesBtn: document.getElementById('tab-images-btn'),
+    overviewTab:   document.getElementById('overviewTab'),
+    imagesTab: document.getElementById('imagesTab')
+};
+
+function switchTab(to) {
+    // deactivate all
+    tabs.overviewBtn.classList.remove('active');
+    tabs.imagesBtn.classList.remove('active');
+    tabs.overviewTab.classList.remove('active');
+    tabs.imagesTab.classList.remove('active');
+
+    // activate selected
+    if (to === 'overview') {
+        tabs.overviewBtn.classList.add('active');
+        tabs.overviewTab.classList.add('active');
+    } else {
+        tabs.imagesBtn.classList.add('active');
+        tabs.imagesTab.classList.add('active');
+    }
+}
+
+tabs.overviewBtn.addEventListener('click', () => switchTab('overview'));
+tabs.imagesBtn.addEventListener('click', () => switchTab('settings'));
 
 

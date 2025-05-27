@@ -5,7 +5,7 @@
     <style>
         body { font-family: Arial, sans-serif; min-width: 320px; padding: 10px; }
         pre { white-space: pre-wrap; word-wrap: break-word; }
-        .img-grid {
+        #imagesTableBody {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 14px;
@@ -56,37 +56,125 @@
             transition: background 0.2s;
         }
         .download-btn:hover { background: #357a38; }
+        /* Tab bar */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 8px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 6px;
+            background: #f9f9f9;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .tab-btn.active {
+            border-bottom-color: #4caf50;
+            background: #fff;
+        }
+
+        /* Tab content */
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
     </style>
     <script src="./dist/jszip.js"></script>
     <script src="./dist/jszip.min.js"></script>
 </head>
 <body>
-<h3>Image assets fetch</h3>
-
-<button id="fetchData">Fetch Image !</button>
-<pre id="result"></pre>
-<div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
-    <label>
-        File Type:
-        <select id="fileTypeFilter">
-            <option value="all">All</option>
-            <option value="jpg">JPG/JPEG</option>
-            <option value="png">PNG</option>
-            <option value="gif">GIF</option>
-            <option value="webp">WEBP</option>
-            <option value="svg">SVG</option>
-        </select>
-    </label>
-    <label>
-        Sort by Size:
-        <select id="sortOrder">
-            <option value="desc">Largest First</option>
-            <option value="asc">Smallest First</option>
-        </select>
-    </label>
+<!-- Tab buttons -->
+<div class="tabs">
+    <button id="tab-overview-btn" class="tab-btn active">Overview</button>
+    <button id="tab-images-btn" class="tab-btn">Images</button>
 </div>
-<button id="downloadZipBtn">Download All as ZIP</button>
-<div id="images" class="img-grid"></div>
+
+<!-- Images tab content -->
+<div id="overviewTab" class="tab-content active">
+    <button id="fetchData">Fetch Images</button>
+    <div class="controls">
+        <label>
+            File Type:
+            <select id="fileTypeFilter">
+                <option value="all">All</option>
+                <option value="jpg">JPG/JPEG</option>
+                <option value="png">PNG</option>
+                <option value="gif">GIF</option>
+                <option value="webp">WEBP</option>
+                <option value="svg">SVG</option>
+            </select>
+        </label>
+        <label>
+            Sort by Size:
+            <select id="sortOrder">
+                <option value="desc">Largest First</option>
+                <option value="asc">Smallest First</option>
+            </select>
+        </label>
+    </div>
+
+    <button id="downloadZipBtn">Download All as ZIP</button>
+
+    <div class="table-container">
+        <table id="imagesTable">
+            <thead>
+            <tr>
+                <th>Preview</th>
+            </tr>
+            </thead>
+            <tbody id="imagesTableBody">
+            <tr>
+                <td colspan="5" style="text-align:center; padding:10px;">
+                    No images fetched yet.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <template id="image-row-template">
+        <tr>
+            <td class="preview-cell">
+                <div class="img-preview">
+                    <img />
+                    <div class="overlay"></div>
+                </div>
+            </td>
+            <td class="alt-cell"></td>
+            <td class="title-cell"></td>
+            <td class="size-cell"></td>
+            <td class="download-cell">
+                <button class="download-btn">Download</button>
+            </td>
+        </tr>
+    </template>
+</div>
+
+<!-- Settings tab content -->
+<div id="imagesTab" class="tab-content">
+    <h4>Extension Settings</h4>
+    <table id="imagesTable-2" style="width: 100%; border-collapse: collapse; margin-top: 12px;">
+        <thead style="background: #f0f0f0; text-align: left;">
+        <tr>
+            <th style="padding: 8px; border-bottom: 1px solid #ddd;">Preview</th>
+            <th style="padding: 8px; border-bottom: 1px solid #ddd;">Alt attribute</th>
+            <th style="padding: 8px; border-bottom: 1px solid #ddd;">Title attribute</th>
+            <th style="padding: 8px; border-bottom: 1px solid #ddd;">Size</th>
+        </tr>
+        </thead>
+        <tbody id="imagesTableBody-2">
+        <!-- rows will be dynamically inserted here -->
+        </tbody>
+    </table>
+
+</div>
+
 <script src="popup.js"></script>
 </body>
 </html>
