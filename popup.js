@@ -40,7 +40,7 @@ function getFileExtension(url) {
 let imagesWithSize = [];
 
 // Render function for images with current filters
-function renderImages() {
+function renderOverviewTab() {
     const fileType = document.getElementById('fileTypeFilter').value;
     const sortOrder = document.getElementById('sortOrder').value;
 
@@ -96,6 +96,60 @@ function renderImages() {
     }
 }
 
+
+function renderImagesTab() {
+    const tbody = document.getElementById('imagesTableBody-2');
+    // clear any old rows
+    tbody.innerHTML = '';
+
+    // if no images, show a placeholder row
+    if (!imagesWithSize.length) {
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = 4;
+        td.style.textAlign = 'center';
+        td.style.padding = '10px';
+        td.textContent = 'No images to display.';
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+        return;
+    }
+
+    // build a row for each image
+    imagesWithSize.forEach(item => {
+        const tr = document.createElement('tr');
+
+        // Preview cell
+        const tdPreview = document.createElement('td');
+        const img = document.createElement('img');
+        console.log("item", item);
+        img.src = item.src;
+        img.alt = item.alt || '';
+        img.title = item.title || '';
+        img.style.width = '80px';
+        img.style.height = 'auto';
+        img.style.objectFit = 'cover';
+        tdPreview.appendChild(img);
+        tr.appendChild(tdPreview);
+
+        // Alt attribute cell
+        const tdAlt = document.createElement('td');
+        tdAlt.textContent = item.alt || '(no alt)';
+        tr.appendChild(tdAlt);
+
+        // Title attribute cell
+        const tdTitle = document.createElement('td');
+        tdTitle.textContent = item.title || '(no title)';
+        tr.appendChild(tdTitle);
+
+        // Size cell
+        const tdSize = document.createElement('td');
+        tdSize.textContent = item.sizeText || 'unknown';
+        tr.appendChild(tdSize);
+
+        tbody.appendChild(tr);
+    });
+}
 // Fetch data and display images
 document.getElementById('fetchData').addEventListener('click', async () => {
     let [tab] = await chrome.tabs.query({active: true, currentWindow: true});
@@ -106,6 +160,7 @@ document.getElementById('fetchData').addEventListener('click', async () => {
         },
         () => {
             chrome.tabs.sendMessage(tab.id, {action: 'getImageData'}, async (response) => {
+
                 if (chrome.runtime.lastError) {
                     document.getElementById('result').textContent = 'Error: ' + chrome.runtime.lastError.message;
                     return;
@@ -113,17 +168,21 @@ document.getElementById('fetchData').addEventListener('click', async () => {
                 const {images} = response;
                 imagesWithSize = [];
                 if (images && images.length) {
-                    const sizePromises = images.map(getImageSize);
-                    const sizes = await Promise.all(sizePromises);
-                    images.forEach((src, i) => {
-                        imagesWithSize.push({
-                            src,
-                            fileName: getFileName(src),
-                            size: sizes[i],
-                            sizeText: formatSize(sizes[i])
-                        });
-                    });
-                    renderImages();
+                    const sizes = await Promise.all(
+                        images.map(imgObj => getImageSize(imgObj.src))
+                    );
+
+                    // Build your working array
+                    imagesWithSize = images.map((imgObj, i) => ({
+                        src:      imgObj.src,
+                        alt:      imgObj.alt,
+                        title:    imgObj.title,
+                        fileName: getFileName(imgObj.src),
+                        size:     sizes[i],
+                        sizeText: formatSize(sizes[i])
+                    }))
+                    renderOverviewTab();
+                    renderImagesTab();
                 } else {
                     document.getElementById('images').textContent = 'No images found on this page.';
                 }
@@ -139,7 +198,6 @@ document.getElementById('downloadZipBtn').addEventListener('click', async () => 
     }
     const zip = new JSZip();
     const folder = zip.folder("images");
-    console.log("folders", folder);
     // Show loading indicator if you want
 
     // Download all images as blobs and add to ZIP
@@ -176,8 +234,8 @@ document.getElementById('downloadZipBtn').addEventListener('click', async () => 
 });
 
 // Add event listeners for filter and sort dropdowns
-document.getElementById('fileTypeFilter').addEventListener('change', renderImages);
-document.getElementById('sortOrder').addEventListener('change', renderImages);
+document.getElementById('fileTypeFilter').addEventListener('change', renderOverviewTab);
+document.getElementById('sortOrder').addEventListener('change', renderOverviewTab);
 
 
 // Tab logic
@@ -206,6 +264,9 @@ function switchTab(to) {
 }
 
 tabs.overviewBtn.addEventListener('click', () => switchTab('overview'));
-tabs.imagesBtn.addEventListener('click', () => switchTab('settings'));
+tabs.imagesBtn.addEventListener('click', () => {
+    switchTab('images');
+    renderImagesTab();
+});
 
 

@@ -5,11 +5,17 @@ function getImages() {
     const images = [];
     for (let img of imgTags) {
         const src = img.src;
-        if (src) images.push(src);
+        if (src) images.push({
+            src:   img.src,
+            alt:   img.alt   || '(no alt)',
+            title: img.title || '(no title)'
+        });
     }
 
     return {images };
 }
+
+
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'getImageData') {
