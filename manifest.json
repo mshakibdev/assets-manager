@@ -1,5 +1,5 @@
 {
-  "name": "Hello Extensions of the world!",
+  "name": "AssetCollector",
   "description": "Base Level Extension",
   "permissions": [
     "activeTab",
