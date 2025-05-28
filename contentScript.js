@@ -15,12 +15,21 @@ function getImages() {
     return {images };
 }
 
+function getSvgData() {
+    // grab all inline SVGs & serialize as strings
+    const svgs = Array.from(document.querySelectorAll('svg'))
+        .map(svg => svg.outerHTML);
+    return { svgs };
+}
 
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'getImageData') {
         const data = getImages();
         sendResponse(data);
+    }
+    else if (request.action === 'getSvgData') {
+        sendResponse(getSvgData());
     }
     return true;
 });

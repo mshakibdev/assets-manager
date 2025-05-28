@@ -55,6 +55,18 @@
             z-index: 3;
             transition: background 0.2s;
         }
+        .copy-btn {
+            bottom: 6px;
+            left: 50%;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            z-index: 3;
+            transition: background 0.2s;
+        }
         .download-btn:hover { background: #357a38; }
         /* Tab bar */
         .tabs {
@@ -93,9 +105,10 @@
 <div class="tabs">
     <button id="tab-overview-btn" class="tab-btn active">Overview</button>
     <button id="tab-images-btn" class="tab-btn">Images</button>
+    <button id="tab-svg-btn" class="tab-btn">SVG</button>
 </div>
 
-<!-- Images tab content -->
+<!-- Overview tab content -->
 <div id="overviewTab" class="tab-content active">
     <button id="fetchData">Fetch Images</button>
     <div class="controls">
@@ -156,7 +169,7 @@
     </template>
 </div>
 
-<!-- Settings tab content -->
+<!-- Images tab content -->
 <div id="imagesTab" class="tab-content">
     <h4>Image Meta Tag</h4>
     <table id="imagesTable-2" style="width: 100%; border-collapse: collapse; margin-top: 12px;">
@@ -173,6 +186,25 @@
         </tbody>
     </table>
 
+</div>
+
+<!--SVG tab-->
+<div id="svgTab" class="tab-content">
+    <h4>Inline SVGs</h4>
+    <table id="svgTable" style="width:100%;border-collapse:collapse;">
+        <thead>
+        <tr>
+            <th style="padding:8px;border-bottom:1px solid #ddd;">Preview</th>
+            <th style="padding:8px;border-bottom:1px solid #ddd;">Code</th>
+            <th style="padding:8px;border-bottom:1px solid #ddd;">Copy</th>
+        </tr>
+        </thead>
+        <tbody id="svgTableBody">
+        <tr>
+            <td colspan="3" style="text-align:center;padding:10px;">No SVGs yet.</td>
+        </tr>
+        </tbody>
+    </table>
 </div>
 
 <script src="popup.js"></script>

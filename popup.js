@@ -188,6 +188,63 @@ function renderImagesTab() {
     });
 }
 
+async function renderSvgTab() {
+    const tbody = document.getElementById('svgTableBody');
+    tbody.innerHTML = '';
+
+    // grab svgs from the page
+    const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+    chrome.scripting.executeScript(
+        { target: { tabId: tab.id }, files: ['contentScript.js'] },
+        () => {
+            chrome.tabs.sendMessage(tab.id, {action: 'getSvgData'}, response => {
+                const svgs = response?.svgs || [];
+                if (!svgs.length) {
+                    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;padding:10px;">No inline SVGs found.</td></tr>`;
+                    return;
+                }
+                // build rows
+                svgs.forEach((code, i) => {
+                    const tr = document.createElement('tr');
+
+                    // Preview cell
+                    const tdPreview = document.createElement('td');
+                    tdPreview.style.padding = '6px';
+                    tdPreview.innerHTML = code;         // renders the SVG
+                    tr.appendChild(tdPreview);
+
+                    // Code cell
+                    const tdCode = document.createElement('td');
+                    tdCode.style.padding = '6px';
+                    const pre = document.createElement('pre');
+                    pre.textContent = code;
+                    pre.style.maxHeight = '120px';
+                    pre.style.overflow = 'auto';
+                    pre.style.whiteSpace = 'pre-wrap';
+                    tdCode.appendChild(pre);
+                    tr.appendChild(tdCode);
+
+                    // Copy button cell
+                    const tdCopy = document.createElement('td');
+                    tdCopy.style.padding = '6px';
+                    const btn = document.createElement('button');
+                    btn.textContent = 'Copy';
+                    btn.className = 'copy-btn';
+                    btn.onclick = () => {
+                        navigator.clipboard.writeText(code)
+                            .then(()=> btn.textContent = 'Copied!')
+                            .catch(()=> btn.textContent = 'Error');
+                        setTimeout(()=> btn.textContent = 'Copy', 1500);
+                    };
+                    tdCopy.appendChild(btn);
+                    tr.appendChild(tdCopy);
+
+                    tbody.appendChild(tr);
+                });
+            });
+        }
+    );
+}
 // Fetch data and display images
 document.getElementById('fetchData').addEventListener('click', async () => {
     let [tab] = await chrome.tabs.query({active: true, currentWindow: true});
@@ -277,26 +334,33 @@ document.getElementById('sortOrder').addEventListener('change', renderOverviewTa
 
 // Tab logic
 const tabs = {
-    overviewBtn:   document.getElementById('tab-overview-btn'),
+    overviewBtn: document.getElementById('tab-overview-btn'),
     imagesBtn: document.getElementById('tab-images-btn'),
-    overviewTab:   document.getElementById('overviewTab'),
-    imagesTab: document.getElementById('imagesTab')
+    svgBtn: document.getElementById('tab-svg-btn'),
+    overviewTab: document.getElementById('overviewTab'),
+    imagesTab: document.getElementById('imagesTab'),
+    svgTab: document.getElementById('svgTab'),
 };
 
 function switchTab(to) {
     // deactivate all
-    tabs.overviewBtn.classList.remove('active');
-    tabs.imagesBtn.classList.remove('active');
-    tabs.overviewTab.classList.remove('active');
-    tabs.imagesTab.classList.remove('active');
-
+    // tabs.overviewBtn.classList.remove('active');
+    // tabs.imagesBtn.classList.remove('active');
+    // tabs.overviewTab.classList.remove('active');
+    // tabs.imagesTab.classList.remove('active');
+    [tabs.overviewBtn, tabs.imagesBtn, tabs.svgBtn].forEach(b => b.classList.remove('active'));
+    [tabs.overviewTab, tabs.imagesTab, tabs.svgTab].forEach(d => d.classList.remove('active'));
     // activate selected
     if (to === 'overview') {
         tabs.overviewBtn.classList.add('active');
         tabs.overviewTab.classList.add('active');
-    } else {
+    }  else if (to === 'images') {
         tabs.imagesBtn.classList.add('active');
         tabs.imagesTab.classList.add('active');
+    } else {
+        tabs.svgBtn.classList.add('active');
+        tabs.svgTab.classList.add('active');
+        renderSvgTab();
     }
 }
 
@@ -305,5 +369,5 @@ tabs.imagesBtn.addEventListener('click', () => {
     switchTab('images');
     renderImagesTab();
 });
-
+tabs.svgBtn.addEventListener('click', () => switchTab('svg'));
 
