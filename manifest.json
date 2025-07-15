@@ -1,22 +1,12 @@
 {
   "name": "AssetCollector",
   "description": "Base Level Extension",
-  "permissions": [
-    "activeTab",
-    "scripting",
-    "downloads"
-  ],
-  "host_permissions": [
-    "<all_urls>"
-  ],
+  "permissions": ["activeTab", "scripting", "downloads"],
+  "host_permissions": ["<all_urls>"],
   "version": "1.0",
   "manifest_version": 3,
   "action": {
-    "default_popup": "hello.html",
+    "default_popup": "index.html",
     "default_icon": "hello_extensions.png"
-  },
-  "minimum_window_size": {
-    "width": 400,
-    "height": 500
   }
 }
