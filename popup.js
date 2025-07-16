@@ -114,6 +114,10 @@ function renderOverviewTab() {
       const img = document.createElement("img");
       img.src = src;
       img.alt = updatedFileName;
+      img.className = "img";
+
+      const imgContentWrapper = document.createElement("div");
+      imgContentWrapper.className = "img-content";
 
       const label = document.createElement("div");
       label.className = "img-label";
@@ -121,17 +125,19 @@ function renderOverviewTab() {
 
       const downloadBtn = document.createElement("button");
       downloadBtn.className = "download-btn";
-      downloadBtn.textContent = "Download";
+      downloadBtn.innerHTML = ` <span class="icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
+<path d="M13 9V9.8C13 10.9201 13 11.4802 12.782 11.908C12.5903 12.2843 12.2843 12.5903 11.908 12.782C11.4802 13 10.9201 13 9.8 13H4.2C3.07989 13 2.51984 13 2.09202 12.782C1.71569 12.5903 1.40973 12.2843 1.21799 11.908C1 11.4802 1 10.9201 1 9.8V9M10.3333 5.66667L7 9M7 9L3.66667 5.66667M7 9V1" stroke="#0D0F0D" stroke-linecap="round" stroke-linejoin="round"/>
+</svg></span>`;
+      // downloadBtn.textContent = "Download";
       downloadBtn.onclick = () => {
         fetch(src)
           .then((r) => r.blob())
           .then((blob) => downloadWithExactName(blob, cleanFilename(fileName)))
           .catch((err) => console.error("Download failed:", err));
       };
-
+      imgContentWrapper.append(label, downloadBtn);
       div.appendChild(img);
-      div.appendChild(label);
-      div.appendChild(downloadBtn);
+      div.appendChild(imgContentWrapper);
       imagesDiv.appendChild(div);
     });
   } else {
@@ -252,8 +258,7 @@ async function renderSvgTab() {
 }
 // Fetch data and display images
 document
-  .getElementById("tab-overview-btn")
-  .addEventListener("click", async () => {
+  .getElementById("tab-overview-btn").addEventListener("click", async () => {
     let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     chrome.scripting.executeScript(
       {
@@ -299,8 +304,7 @@ document
   });
 
 document
-  .getElementById("downloadZipBtn")
-  .addEventListener("click", async () => {
+  .getElementById("downloadZipBtn").addEventListener("click", async () => {
     if (!imagesWithSize.length) {
       alert("No images to download!");
       return;
@@ -342,14 +346,11 @@ document
       }, 100);
     });
   });
-
 // Add event listeners for filter and sort dropdowns
 document
-  .getElementById("fileTypeFilter")
-  .addEventListener("change", renderOverviewTab);
+  .getElementById("fileTypeFilter").addEventListener("change", renderOverviewTab);
 document
-  .getElementById("sortOrder")
-  .addEventListener("change", renderOverviewTab);
+  .getElementById("sortOrder").addEventListener("change", renderOverviewTab);
 
 // Tab logic
 const tabs = {
