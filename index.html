@@ -41,6 +41,10 @@
                 </div>
 
                 <button id="downloadZipBtn" class="download-zip-btn ">Download All as ZIP</button>
+                <div class="view-toggle">
+                    <button id="viewGridBtn" class="view-btn active">Grid View</button>
+                    <button id="viewListBtn" class="view-btn">List View</button>
+                </div>
                 <div class="table-container">
                     <table id="imagesTable">
                         <thead>
@@ -98,22 +102,10 @@
             </div>
 
             <!--SVG tab-->
+            <!-- popup.html -->
             <div id="svgTab" class="tab-content">
                 <h4>Inline SVGs</h4>
-                <table id="svgTable" style="width:100%;border-collapse:collapse;">
-                    <thead>
-                        <tr>
-                            <th style="padding:8px;border-bottom:1px solid #ddd;">Preview</th>
-                            <th style="padding:8px;border-bottom:1px solid #ddd;">Code</th>
-                            <th style="padding:8px;border-bottom:1px solid #ddd;">Copy</th>
-                        </tr>
-                    </thead>
-                    <tbody id="svgTableBody">
-                        <tr>
-                            <td colspan="3" style="text-align:center;padding:10px;">No SVGs yet.</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div id="svgGrid">Loading SVGs…</div>
             </div>
             <div>
 

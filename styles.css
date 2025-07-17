@@ -193,3 +193,88 @@ select {
   display: flex;
   justify-content: space-between;
 }
+
+/* ----- Toggle button styling ----- */
+.view-toggle {
+  display: inline-flex;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.view-toggle .view-btn {
+  padding: 6px 12px;
+  background: #f9f9f9;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+.view-toggle .view-btn.active {
+  background: #fff;
+  border-bottom: 2px solid #4caf50;
+}
+
+/* ----- Container modes ----- */
+#imagesTableBody.view-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+#imagesTableBody.view-list {
+  display: block;
+}
+
+/* ----- List item layout ----- */
+#imagesTableBody.view-list .img-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+}
+#imagesTableBody.view-list .img-item img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+/* make the label+buttons sit at the right */
+#imagesTableBody.view-list .img-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+/* grid wrapper */
+#svgGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+/* each SVG card */
+.svg-item {
+  background: hsl(0, 0%, 94%);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* the SVG itself */
+.svg-item .svg-preview {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 8px;
+}
+
+/* buttons under each SVG */
+.svg-item button {
+  margin: 4px 2px;
+  padding: 6px 10px;
+  font-size: 12px;
+  border: 1px solid hsl(0, 0%, 94%);
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+}

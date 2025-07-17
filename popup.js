@@ -199,10 +199,10 @@ function renderImagesTab() {
 }
 
 async function renderSvgTab() {
-  const tbody = document.getElementById("svgTableBody");
-  tbody.innerHTML = "";
+  const container = document.getElementById("svgGrid");
+  container.innerHTML = ""; // clear old
 
-  // grab svgs from the page
+  // inject & fetch SVG data
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   chrome.scripting.executeScript(
     { target: { tabId: tab.id }, files: ["contentScript.js"] },
@@ -210,55 +210,52 @@ async function renderSvgTab() {
       chrome.tabs.sendMessage(tab.id, { action: "getSvgData" }, (response) => {
         const svgs = response?.svgs || [];
         if (!svgs.length) {
-          tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;padding:10px;">No inline SVGs found.</td></tr>`;
+          container.textContent = "No inline SVGs found.";
           return;
         }
-        // build rows
+
         svgs.forEach((code, i) => {
-          const tr = document.createElement("tr");
+          const item = document.createElement("div");
+          item.className = "svg-item";
 
-          // Preview cell
-          const tdPreview = document.createElement("td");
-          tdPreview.style.padding = "6px";
-          tdPreview.innerHTML = code; // renders the SVG
-          tr.appendChild(tdPreview);
+          // 1) Preview
+          const preview = document.createElement("div");
+          preview.className = "svg-preview";
+          preview.innerHTML = code;
 
-          // Code cell
-          const tdCode = document.createElement("td");
-          tdCode.style.padding = "6px";
-          const pre = document.createElement("pre");
-          pre.textContent = code;
-          pre.style.maxHeight = "120px";
-          pre.style.overflow = "auto";
-          pre.style.whiteSpace = "pre-wrap";
-          tdCode.appendChild(pre);
-          tr.appendChild(tdCode);
-
-          // Copy button cell
-          const tdCopy = document.createElement("td");
-          tdCopy.style.padding = "6px";
-          const btn = document.createElement("button");
-          btn.textContent = "Copy";
-          btn.className = "copy-btn";
-          btn.onclick = () => {
+          // 2) Copy button
+          const copyBtn = document.createElement("button");
+          copyBtn.textContent = "Copy";
+          copyBtn.onclick = () => {
             navigator.clipboard
               .writeText(code)
-              .then(() => (btn.textContent = "Copied!"))
-              .catch(() => (btn.textContent = "Error"));
-            setTimeout(() => (btn.textContent = "Copy"), 1500);
+              .then(() => (copyBtn.textContent = "Copied!"))
+              .catch(() => (copyBtn.textContent = "Error"));
+            setTimeout(() => (copyBtn.textContent = "Copy"), 1500);
           };
-          tdCopy.appendChild(btn);
-          tr.appendChild(tdCopy);
 
-          tbody.appendChild(tr);
+          // 3) Download button
+          const downloadBtn = document.createElement("button");
+          downloadBtn.textContent = "Download";
+          downloadBtn.onclick = () => {
+            // create a .svg file from the code
+            const blob = new Blob([code], { type: "image/svg+xml" });
+            downloadWithExactName(blob, `icon${i + 1}.svg`);
+          };
+
+          // assemble & append
+          item.append(preview, copyBtn, downloadBtn);
+          container.appendChild(item);
         });
       });
     }
   );
 }
+
 // Fetch data and display images
 document
-  .getElementById("tab-overview-btn").addEventListener("click", async () => {
+  .getElementById("tab-overview-btn")
+  .addEventListener("click", async () => {
     let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     chrome.scripting.executeScript(
       {
@@ -304,7 +301,8 @@ document
   });
 
 document
-  .getElementById("downloadZipBtn").addEventListener("click", async () => {
+  .getElementById("downloadZipBtn")
+  .addEventListener("click", async () => {
     if (!imagesWithSize.length) {
       alert("No images to download!");
       return;
@@ -348,9 +346,11 @@ document
   });
 // Add event listeners for filter and sort dropdowns
 document
-  .getElementById("fileTypeFilter").addEventListener("change", renderOverviewTab);
+  .getElementById("fileTypeFilter")
+  .addEventListener("change", renderOverviewTab);
 document
-  .getElementById("sortOrder").addEventListener("change", renderOverviewTab);
+  .getElementById("sortOrder")
+  .addEventListener("change", renderOverviewTab);
 
 // Tab logic
 const tabs = {
@@ -402,3 +402,23 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Trigger the same handler as clicking “Fetch Images”
   document.getElementById("tab-overview-btn").click();
 });
+
+// --- View Toggle Setup ---
+const gridBtn = document.getElementById("viewGridBtn");
+const listBtn = document.getElementById("viewListBtn");
+const container = document.getElementById("imagesTableBody");
+
+function setView(mode) {
+  const isGrid = mode === "grid";
+  container.classList.toggle("view-grid", isGrid);
+  container.classList.toggle("view-list", !isGrid);
+  gridBtn.classList.toggle("active", isGrid);
+  listBtn.classList.toggle("active", !isGrid);
+}
+
+// button handlers
+gridBtn.addEventListener("click", () => setView("grid"));
+listBtn.addEventListener("click", () => setView("list"));
+
+// initialize default
+setView("grid");
