@@ -39,7 +39,9 @@ pre {
   white-space: pre-wrap;
   word-wrap: break-word;
 }
-
+#imagesTable {
+  width: 100%;
+}
 #imagesTableBody {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -78,6 +80,7 @@ pre {
   text-align: start;
   z-index: 2;
   white-space: pre-line;
+  width: 200px;
 }
 
 .download-btn {
@@ -197,10 +200,10 @@ select {
 /* ----- Toggle button styling ----- */
 .view-toggle {
   display: inline-flex;
-  border: 1px solid #ccc;
   border-radius: 6px;
   overflow: hidden;
   margin-bottom: 12px;
+  justify-content: flex-end;
 }
 .view-toggle .view-btn {
   padding: 6px 12px;
@@ -220,8 +223,17 @@ select {
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 12px;
 }
+
+#imagesTableBody.view-grid .content-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
 #imagesTableBody.view-list {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 /* ----- List item layout ----- */
@@ -231,6 +243,12 @@ select {
   gap: 12px;
   padding: 8px;
 }
+
+#imagesTableBody.view-list .content-container {
+  display: flex;
+  align-items: center;
+}
+
 #imagesTableBody.view-list .img-item img {
   width: 80px;
   height: 80px;
@@ -247,34 +265,89 @@ select {
 /* grid wrapper */
 #svgGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 12px;
   margin-top: 12px;
 }
 
 /* each SVG card */
+.svg-preview svg {
+  width: 40px;
+  height: 40px;
+}
 .svg-item {
-  background: hsl(0, 0%, 94%);
-  border-radius: 8px;
-  padding: 12px;
+  background: hsla(0, 0%, 94%, 1);
+  border-radius: 4px;
+  padding: 6px 6px 0px 6px;
   text-align: center;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
 /* the SVG itself */
 .svg-item .svg-preview {
-  width: 80px;
-  height: 80px;
-  margin-bottom: 8px;
+  text-align: center;
+  height: 150px;
+  padding: 55px 66px;
+  background: hsla(0, 0%, 100%, 1);
 }
 
 /* buttons under each SVG */
+.svg-btn-container {
+  display: flex;
+  justify-content: space-between;
+}
+
 .svg-item button {
-  margin: 4px 2px;
-  padding: 6px 10px;
-  font-size: 12px;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 28px; /* 175% */
+  letter-spacing: -0.32px;
   border: 1px solid hsl(0, 0%, 94%);
   border-radius: 4px;
-  background: #fff;
   cursor: pointer;
+}
+
+#imagesTab {
+  padding: 12px 12px 0px 12px;
+}
+
+h1 {
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 28px; /* 175% */
+  letter-spacing: -0.32px;
+  margin: 0;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  /* margin-top: 12px; */
+}
+th {
+  padding: 4px;
+  /* border-bottom: 1px solid #ddd; */
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px; /* 166.667% */
+  letter-spacing: -0.24px;
+}
+thead {
+  background: hsla(0, 0%, 86%, 1);
+  text-align: left;
+}
+
+tr {
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px; /* 166.667% */
+  letter-spacing: -0.24px;
+}
+.danger {
+  color: red;
+}
+#svgTab {
+  padding: 12px;
 }

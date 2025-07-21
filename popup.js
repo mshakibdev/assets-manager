@@ -121,7 +121,14 @@ function renderOverviewTab() {
 
       const label = document.createElement("div");
       label.className = "img-label";
-      label.textContent = `${updatedFileName}\n${sizeText}`;
+      label.textContent = `${updatedFileName}`;
+
+      const imageSize = document.createElement("div");
+      imageSize.className = "img-size";
+      imageSize.textContent = `${sizeText}`;
+
+      const contentContainer = document.createElement("div");
+      contentContainer.className = "content-container";
 
       const downloadBtn = document.createElement("button");
       downloadBtn.className = "download-btn";
@@ -135,7 +142,8 @@ function renderOverviewTab() {
           .then((blob) => downloadWithExactName(blob, cleanFilename(fileName)))
           .catch((err) => console.error("Download failed:", err));
       };
-      imgContentWrapper.append(label, downloadBtn);
+      contentContainer.append(label, imageSize);
+      imgContentWrapper.append(contentContainer, downloadBtn);
       div.appendChild(img);
       div.appendChild(imgContentWrapper);
       imagesDiv.appendChild(div);
@@ -173,20 +181,29 @@ function renderImagesTab() {
     img.src = item.src;
     img.alt = item.alt || "";
     img.title = item.title || "";
-    img.style.width = "80px";
-    img.style.height = "auto";
+    img.style.width = "64px";
+    img.style.height = "48px";
     img.style.objectFit = "cover";
     tdPreview.appendChild(img);
     tr.appendChild(tdPreview);
 
     // Alt attribute cell
     const tdAlt = document.createElement("td");
+
     tdAlt.textContent = item.alt || "(no alt)";
+    if (tdAlt.textContent === "(no alt)") {
+      tdAlt.classList.add("danger");
+    }
+
     tr.appendChild(tdAlt);
 
     // Title attribute cell
     const tdTitle = document.createElement("td");
     tdTitle.textContent = item.title || "(no title)";
+
+    if (tdTitle.textContent === "(no title)") {
+      tdTitle.classList.add("danger");
+    }
     tr.appendChild(tdTitle);
 
     // Size cell
@@ -243,8 +260,12 @@ async function renderSvgTab() {
             downloadWithExactName(blob, `icon${i + 1}.svg`);
           };
 
+          const svgBtnContainer = document.createElement("div");
+          svgBtnContainer.className = "svg-btn-container";
+          svgBtnContainer.append(copyBtn, downloadBtn);
+
           // assemble & append
-          item.append(preview, copyBtn, downloadBtn);
+          item.append(preview, svgBtnContainer);
           container.appendChild(item);
         });
       });
