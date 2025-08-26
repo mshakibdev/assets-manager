@@ -1,3 +1,11 @@
+// === Loader helpers (uses the #loader you added in index.html) ===
+const loaderEl = document.getElementById("loader");
+const showLoader = () => loaderEl && loaderEl.classList.add("show");
+const hideLoader = () => loaderEl && loaderEl.classList.remove("show");
+// Start hidden by default; we only hide after images exist
+hideLoader();
+
+
 function cleanFilename(filename) {
   // Pattern 1: Random hex string + underscore (like your example)
   let match = filename.match(/^[a-f0-9]{16,}_(.+)$/i);
@@ -275,51 +283,72 @@ async function renderSvgTab() {
 
 // Fetch data and display images
 document
-  .getElementById("tab-overview-btn")
-  .addEventListener("click", async () => {
-    let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    chrome.scripting.executeScript(
-      {
-        target: { tabId: tab.id },
-        files: ["contentScript.js"],
-      },
-      () => {
-        chrome.tabs.sendMessage(
-          tab.id,
-          { action: "getImageData" },
-          async (response) => {
-            if (chrome.runtime.lastError) {
-              document.getElementById("result").textContent =
-                "Error: " + chrome.runtime.lastError.message;
-              return;
-            }
-            const { images } = response;
-            imagesWithSize = [];
-            if (images && images.length) {
-              const sizes = await Promise.all(
-                images.map((imgObj) => getImageSize(imgObj.src))
-              );
+    .getElementById("tab-overview-btn")
+    .addEventListener("click", async () => {
+        // show centered spinner immediately
+        showLoader();
 
-              // Build your working array
-              imagesWithSize = images.map((imgObj, i) => ({
+        // optional: clear previous results area so the spinner is visually centered
+        const tbody = document.getElementById("imagesTableBody");
+        if (tbody) tbody.innerHTML = "";
+
+        try {
+            let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+            // If the active page is a Chrome error page (e.g., offline “dino”), treat as 0 images
+            if (tab?.url?.startsWith?.("chrome-error://")) {
+                // Keep the loader visible and exit (requirement: loader stays when images = 0)
+                return;
+            }
+
+            // Inject content script (safe to call even if already injected)
+            await new Promise((resolve, reject) => {
+                chrome.scripting.executeScript(
+                    { target: { tabId: tab.id }, files: ["contentScript.js"] },
+                    () => (chrome.runtime.lastError ? reject(chrome.runtime.lastError) : resolve())
+                );
+            });
+
+            // Request image data
+            const response = await new Promise((resolve) => {
+                chrome.tabs.sendMessage(tab.id, { action: "getImageData" }, (res) => resolve(res));
+            });
+
+            const images = (response && response.images) || [];
+
+            // === Key requirement: if 0 images, keep loader visible and stop ===
+            if (!images.length) {
+                return; // spinner stays centered; no message shown
+            }
+
+            // You already compute sizes + build imagesWithSize in your current code.
+            // We'll reuse your existing functions and rendering as-is:
+
+            const sizes = await Promise.all(
+                images.map((imgObj) => getImageSize(imgObj.src).catch(() => 0))
+            );
+
+            imagesWithSize = images.map((imgObj, i) => ({
                 src: imgObj.src,
                 alt: imgObj.alt,
                 title: imgObj.title,
                 fileName: getFileName(imgObj.src),
                 size: sizes[i],
                 sizeText: formatSize(sizes[i]),
-              }));
-              renderOverviewTab();
-              renderImagesTab();
-            } else {
-              document.getElementById("images").textContent =
-                "No images found on this page.";
-            }
-          }
-        );
-      }
-    );
-  });
+            }));
+
+            // Hide spinner now that we have images
+            hideLoader();
+
+            // Use your existing render functions
+            renderOverviewTab();
+            renderImagesTab();
+        } catch (_) {
+            // On any failure (including offline), behave like images === 0:
+            // do nothing here so the loader stays visible and centered.
+            return;
+        }
+    });
 
 document
   .getElementById("downloadZipBtn")

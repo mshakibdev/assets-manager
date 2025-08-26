@@ -501,3 +501,27 @@ table th:last-child {
     border-color: #5fad03;
     background-color: #f7ffe5;
 }
+/* Centered overlay loader (no text) */
+.loader-overlay {
+    position: fixed;
+    inset: 0;                   /* top:0; right:0; bottom:0; left:0 */
+    display: none;              /* hidden by default */
+    align-items: center;        /* center vertically */
+    justify-content: center;    /* center horizontally */
+    z-index: 9999;
+    background: transparent;    /* keeps your UI visible under it */
+    pointer-events: none;       /* clicks pass through */
+}
+
+.loader-overlay.show { display: flex; }
+
+.spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid #e5e7eb;  /* light gray */
+    border-top-color: #0f172a;  /* dark accent */
+    border-radius: 50%;
+    animation: spin .9s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
