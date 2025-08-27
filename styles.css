@@ -524,4 +524,15 @@ table th:last-child {
     animation: spin .9s linear infinite;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin { to { transform: rotate(360deg);
+}
+
+}
+/* Buttons container on list view rows */
+#imagesTableBody.view-list .img-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;    /* push actions to the far right */
+}
+

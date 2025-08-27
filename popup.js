@@ -91,75 +91,142 @@ let imagesWithSize = [];
 
 // Render function for images with current filters
 function renderOverviewTab() {
-  const fileType = document.getElementById("fileTypeFilter").value;
-  const sortOrder = document.getElementById("sortOrder").value;
+    const fileType = document.getElementById("fileTypeFilter").value;
+    const sortOrder = document.getElementById("sortOrder").value;
 
-  // Filter
-  let filtered = imagesWithSize;
-  if (fileType !== "all") {
-    filtered = filtered.filter((item) => {
-      const ext = getFileExtension(item.src);
-      if (fileType === "jpg") return ext === "jpg" || ext === "jpeg";
-      return ext === fileType;
-    });
-  }
+    // -------- Filter
+    let filtered = imagesWithSize;
+    if (fileType !== "all") {
+        filtered = filtered.filter((item) => {
+            const ext = getFileExtension(item.src);
+            if (fileType === "jpg") return ext === "jpg" || ext === "jpeg";
+            return ext === fileType;
+        });
+    }
 
-  // Sort
-  filtered = filtered
-    .slice()
-    .sort((a, b) => (sortOrder === "asc" ? a.size - b.size : b.size - a.size));
+    // -------- Sort (Largest First / Smallest First by size)
+    filtered = filtered
+        .slice()
+        .sort((a, b) => (sortOrder === "asc" ? a.size - b.size : b.size - a.size));
 
-  // Render to DOM
-  const imagesDiv = document.getElementById("imagesTableBody");
-  imagesDiv.innerHTML = "";
-  if (filtered.length) {
+    // -------- Render
+    const container = document.getElementById("imagesTableBody");
+    const isListView = container.classList.contains("view-list");
+    container.innerHTML = "";
+
+    if (!filtered.length) {
+        // (You also keep a loader for 0 images—this is just a fallback)
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 5;
+        td.style.textAlign = "center";
+        td.style.padding = "10px";
+        td.textContent = "No images found for the selected filter.";
+        tr.appendChild(td);
+        container.appendChild(tr);
+        return;
+    }
+
     filtered.forEach((item) => {
-      const { src, fileName, sizeText } = item;
-      const updatedFileName = cleanFilename(fileName);
-      const div = document.createElement("div");
-      div.className = "img-item";
+        const { src, fileName, sizeText } = item;
+        const updatedFileName = cleanFilename(fileName);
 
-      const img = document.createElement("img");
-      img.src = src;
-      img.alt = updatedFileName;
-      img.className = "img";
+        // Row wrapper
+        const row = document.createElement("div");
+        row.className = "img-item";
 
-      const imgContentWrapper = document.createElement("div");
-      imgContentWrapper.className = "img-content";
+        // Left: preview
+        const imgEl = document.createElement("img");
+        imgEl.src = src;
+        imgEl.alt = updatedFileName || "";
+        imgEl.className = "img";
 
-      const label = document.createElement("div");
-      label.className = "img-label";
-      label.textContent = `${updatedFileName}`;
+        // Middle: name + size
+        const content = document.createElement("div");
+        content.className = "img-content";
 
-      const imageSize = document.createElement("div");
-      imageSize.className = "img-size";
-      imageSize.textContent = `${sizeText}`;
+        const contentContainer = document.createElement("div");
+        contentContainer.className = "content-container";
 
-      const contentContainer = document.createElement("div");
-      contentContainer.className = "content-container";
+        const label = document.createElement("div");
+        label.className = "img-label";
+        label.textContent = updatedFileName;
 
-      const downloadBtn = document.createElement("button");
-      downloadBtn.className = "download-btn";
-      downloadBtn.innerHTML = ` <span class="icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
-<path d="M13 9V9.8C13 10.9201 13 11.4802 12.782 11.908C12.5903 12.2843 12.2843 12.5903 11.908 12.782C11.4802 13 10.9201 13 9.8 13H4.2C3.07989 13 2.51984 13 2.09202 12.782C1.71569 12.5903 1.40973 12.2843 1.21799 11.908C1 11.4802 1 10.9201 1 9.8V9M10.3333 5.66667L7 9M7 9L3.66667 5.66667M7 9V1" stroke="#0D0F0D" stroke-linecap="round" stroke-linejoin="round"/>
-</svg></span>`;
-      // downloadBtn.textContent = "Download";
-      downloadBtn.onclick = () => {
-        fetch(src)
-          .then((r) => r.blob())
-          .then((blob) => downloadWithExactName(blob, cleanFilename(fileName)))
-          .catch((err) => console.error("Download failed:", err));
-      };
-      contentContainer.append(label, imageSize);
-      imgContentWrapper.append(contentContainer, downloadBtn);
-      div.appendChild(img);
-      div.appendChild(imgContentWrapper);
-      imagesDiv.appendChild(div);
+        const sizeEl = document.createElement("div");
+        sizeEl.className = "img-size";
+        sizeEl.textContent = sizeText;
+
+        contentContainer.append(label, sizeEl);
+
+        // ---- Actions (right)
+        // Download (existing behavior)
+        const downloadBtn = document.createElement("button");
+        downloadBtn.className = "download-btn";
+        downloadBtn.title = "Download";
+        downloadBtn.innerHTML = `
+      <span class="icon-wrap">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7 1v7m0 0l-3-3m3 3l3-3M2 9.5v.3c0 1.2 0 1.7.3 2 .3.2.7.2 1.7.2h6c1 0 1.4 0 1.7-.2.3-.3.3-.8.3-2v-.3" stroke="#0D0F0D" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>`;
+        downloadBtn.onclick = () => {
+            fetch(src)
+                .then((r) => r.blob())
+                .then((blob) => downloadWithExactName(blob, cleanFilename(updatedFileName)))
+                .catch((err) => console.error("Download failed:", err));
+        };
+
+        // Copy URL button — **only in List View**
+        if (isListView) {
+            const actions = document.createElement("div");
+            actions.className = "img-actions"; // keep both buttons grouped on the right
+
+            const copyBtn = document.createElement("button");
+            copyBtn.className = "download-btn copy-btn"; // reuse same style
+            copyBtn.title = "Copy image URL";
+            copyBtn.setAttribute("aria-label", "Copy image URL");
+
+            const copyIcon = `
+        <span class="icon-wrap">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4.25" y="1.75" width="8" height="8" rx="1.25" stroke="#0D0F0D"/>
+            <rect x="1.75" y="4.25" width="8" height="8" rx="1.25" stroke="#0D0F0D"/>
+          </svg>
+        </span>`;
+            const checkIcon = `
+        <span class="icon-wrap">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 7l2 2 5-5" stroke="#0D0F0D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>`;
+
+            copyBtn.innerHTML = copyIcon;
+            copyBtn.addEventListener("click", async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                try {
+                    await navigator.clipboard.writeText(src);
+                    copyBtn.innerHTML = checkIcon;      // quick visual feedback
+                    setTimeout(() => (copyBtn.innerHTML = copyIcon), 900);
+                } catch (err) {
+                    console.error("Copy URL failed:", err);
+                }
+            });
+
+            actions.append(copyBtn, downloadBtn);
+            content.append(contentContainer, actions);
+        } else {
+            // Grid view: keep your original single download button
+            content.append(contentContainer, downloadBtn);
+        }
+
+        row.appendChild(imgEl);
+        row.appendChild(content);
+        container.appendChild(row);
     });
-  } else {
-    imagesDiv.textContent = "No images found for the selected filter.";
-  }
 }
+
+
 
 function renderImagesTab() {
   const tbody = document.getElementById("imagesTableBody-2");
@@ -467,8 +534,8 @@ function setView(mode) {
 }
 
 // button handlers
-gridBtn.addEventListener("click", () => setView("grid"));
-listBtn.addEventListener("click", () => setView("list"));
+gridBtn.addEventListener("click", () => { setView("grid"); renderOverviewTab(); });
+listBtn.addEventListener("click", () => { setView("list"); renderOverviewTab(); });
 
 // initialize default
 setView("grid");
