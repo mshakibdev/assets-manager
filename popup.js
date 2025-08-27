@@ -5,6 +5,14 @@ const hideLoader = () => loaderEl && loaderEl.classList.remove("show");
 // Start hidden by default; we only hide after images exist
 hideLoader();
 
+function getImageDims(url) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve({ w: img.naturalWidth || 0, h: img.naturalHeight || 0 });
+        img.onerror = () => resolve({ w: 0, h: 0 });
+        img.src = url;
+    });
+}
 
 function cleanFilename(filename) {
   // Pattern 1: Random hex string + underscore (like your example)
@@ -112,6 +120,8 @@ function renderOverviewTab() {
     // -------- Render
     const container = document.getElementById("imagesTableBody");
     const isListView = container.classList.contains("view-list");
+    const isGridView = container.classList.contains("view-grid");
+
     container.innerHTML = "";
 
     if (!filtered.length) {
@@ -154,7 +164,13 @@ function renderOverviewTab() {
 
         const sizeEl = document.createElement("div");
         sizeEl.className = "img-size";
-        sizeEl.textContent = sizeText;
+        // In grid view, append "| WxH" if we have dimensions
+        if (isGridView && item.w && item.h) {
+            sizeEl.textContent = `${sizeText} | ${item.w}x${item.h}`;
+        } else {
+            sizeEl.textContent = sizeText;
+        }
+
 
         contentContainer.append(label, sizeEl);
 
@@ -395,6 +411,11 @@ document
                 images.map((imgObj) => getImageSize(imgObj.src).catch(() => 0))
             );
 
+            // compute dimensions (natural width/height)
+            const dims = await Promise.all(
+                images.map((imgObj) => getImageDims(imgObj.src))
+            );
+
             imagesWithSize = images.map((imgObj, i) => ({
                 src: imgObj.src,
                 alt: imgObj.alt,
@@ -402,6 +423,8 @@ document
                 fileName: getFileName(imgObj.src),
                 size: sizes[i],
                 sizeText: formatSize(sizes[i]),
+                w: dims[i].w,
+                h: dims[i].h
             }));
 
             // Hide spinner now that we have images
