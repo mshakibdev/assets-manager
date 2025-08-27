@@ -273,13 +273,13 @@ function renderImagesTab() {
     tr.appendChild(tdAlt);
 
     // Title attribute cell
-    const tdTitle = document.createElement("td");
-    tdTitle.textContent = item.title || "(no title)";
-
-    if (tdTitle.textContent === "(no title)") {
-      tdTitle.classList.add("danger");
-    }
-    tr.appendChild(tdTitle);
+    // const tdTitle = document.createElement("td");
+    // tdTitle.textContent = item.title || "(no title)";
+    //
+    // if (tdTitle.textContent === "(no title)") {
+    //   tdTitle.classList.add("danger");
+    // }
+    // tr.appendChild(tdTitle);
 
     // Size cell
     const tdSize = document.createElement("td");
