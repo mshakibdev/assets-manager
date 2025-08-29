@@ -1,7 +1,32 @@
 // === Loader helpers (uses the #loader you added in index.html) ===
 const loaderEl = document.getElementById("loader");
-const showLoader = () => loaderEl && loaderEl.classList.add("show");
-const hideLoader = () => loaderEl && loaderEl.classList.remove("show");
+
+const INTERACTIVE_SELECTOR =
+    'button, input, select, textarea, [role="button"], [type="button"], [type="submit"]';
+
+function setBusy(isBusy) {
+    document.querySelectorAll(INTERACTIVE_SELECTOR).forEach((el) => {
+        if (isBusy) {
+            if (!el.disabled) el.dataset._wasEnabled = "1"; // remember which were enabled
+            el.disabled = true;
+        } else {
+            if (el.dataset._wasEnabled === "1") {
+                el.disabled = false;
+                delete el.dataset._wasEnabled;
+            }
+        }
+    });
+}
+
+function showLoader() {
+    loaderEl?.classList.add("show");
+    setBusy(true);
+}
+
+function hideLoader() {
+    loaderEl?.classList.remove("show");
+    setBusy(false);
+}
 // Start hidden by default; we only hide after images exist
 hideLoader();
 

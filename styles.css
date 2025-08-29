@@ -509,7 +509,7 @@ table th:last-child {
     justify-content: center;    /* center horizontally */
     z-index: 9999;
     background: transparent;    /* keeps your UI visible under it */
-    pointer-events: none;       /* clicks pass through */
+    pointer-events: all;
 }
 
 .loader-overlay.show { display: flex; }
@@ -533,5 +533,24 @@ table th:last-child {
     align-items: center;
     gap: 8px;
     margin-left: auto;    /* push actions to the far right */
+}
+
+/* Make loader overlay intercept clicks while visible */
+
+
+/* Visual feedback for disabled controls (works for <button>, <input>, <select>) */
+button:disabled,
+input:disabled,
+select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed !important;
+}
+
+/* If you have custom button classes, this helps too */
+.download-btn:disabled,
+.tab-btn:disabled,
+.view-btn:disabled {
+    opacity: 0.6;
+    pointer-events: none;
 }
 
