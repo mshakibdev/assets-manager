@@ -19,6 +19,11 @@
     font-style: normal;
     font-display: swap;
 }
+:root{
+    --preview-w: 150px;
+    --preview-h: auto;
+    --preview-pad: 4px;
+}
 
 html,
 body {
@@ -552,5 +557,82 @@ select:disabled {
 .view-btn:disabled {
     opacity: 0.6;
     pointer-events: none;
+}
+
+/* Size + dimensions line */
+.img-size {
+    display: flex;
+    align-items: center;
+    gap: 12px;                 /* ← increase/decrease this value for more/less space */
+}
+
+/* Visual separator between the two parts */
+.img-size .meta-sep::before {
+    content: "|";
+    opacity: 0.6;
+}
+
+/* (optional) fine-tune text styling */
+.img-size .file-size { white-space: nowrap; }
+.img-size .file-dims { white-space: nowrap; }
+
+/* Images meta table – make Size column tight and right-aligned */
+#imagesTable-2 th.size-col,
+#imagesTable-2 td.size-col {
+    width: 1%;              /* shrink to content */
+    white-space: nowrap;    /* keep '4.4 KB' on one line */
+    text-align: right;      /* right align numbers */
+    padding-right: 8px;     /* tweak this to control right gap */
+}
+
+/* Optional: fix Preview column width so the middle column gets the rest */
+#imagesTable-2 th.preview-col,
+#imagesTable-2 td.preview-col { width: 72px; }
+/* --- Images meta table preview box --- */
+/* --- Preview column sizing + spacing --- */
+
+/* Column widths & right-side gap to Alt column */
+#imagesTable-2 th.preview-col,
+#imagesTable-2 td.preview-col {
+    width: var(--preview-w);
+    padding-right: 18px;           /* ← gap between Preview and Alt columns */
+    vertical-align: middle;
+}
+
+/* Tight, right-aligned Size column (keep from drifting right) */
+#imagesTable-2 th.size-col,
+#imagesTable-2 td.size-col {
+    width: 1%;
+    white-space: nowrap;
+    text-align: right;
+    padding-right: 8px;
+}
+
+/* Preview box: bigger, padded, and always visible even for white logos */
+.preview-box {
+    width: var(--preview-w);
+    height: var(--preview-h);
+    padding: var(--preview-pad);   /* ← inner padding */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: 1px solid #e6e6e8;
+
+    /* subtle checkerboard so white/transparent images are visible */
+    background-color: #f7f7f8;
+    background-size: 12px 12px;
+    background-position: 0 0, 0 6px, 6px -6px, -6px 0;
+}
+
+/* The image itself: fit fully, never crop, clear edge with its own border */
+.preview-box img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;           /* ✅ no cut-off */
+    display: block;
+    background: #fff;              /* white logo still visible over checkerboard */
+    border: 1px solid #dfe3e8;     /* thin inner frame for white images */
+    border-radius: 6px;
 }
 

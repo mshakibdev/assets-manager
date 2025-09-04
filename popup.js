@@ -191,11 +191,25 @@ function renderOverviewTab() {
         sizeEl.className = "img-size";
         // In grid view, append "| WxH" if we have dimensions
         if (isGridView && item.w && item.h) {
-            sizeEl.textContent = `${sizeText} | ${item.w}x${item.h}`;
-        } else {
-            sizeEl.textContent = sizeText;
-        }
+            const sizeSpan = document.createElement("span");
+            sizeSpan.className = "file-size";
+            sizeSpan.textContent = sizeText;
 
+            const sep = document.createElement("span");
+            sep.className = "meta-sep";               // will render "|" via CSS
+
+            const dimsSpan = document.createElement("span");
+            dimsSpan.className = "file-dims";
+            dimsSpan.textContent = `${item.w}x${item.h}`;
+
+            sizeEl.append(sizeSpan, sep, dimsSpan);
+        } else {
+            // List view or no dimensions
+            const sizeSpan = document.createElement("span");
+            sizeSpan.className = "file-size";
+            sizeSpan.textContent = sizeText;
+            sizeEl.append(sizeSpan);
+        }
 
         contentContainer.append(label, sizeEl);
 
@@ -236,9 +250,16 @@ function renderOverviewTab() {
         </span>`;
             const checkIcon = `
         <span class="icon-wrap">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M3 7l2 2 5-5" stroke="#0D0F0D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+  <g clip-path="url(#clip0_38_1496)">
+    <path d="M3.33337 10C2.71212 10 2.40149 10 2.15646 9.8985C1.82976 9.76318 1.57019 9.50361 1.43487 9.17691C1.33337 8.93188 1.33337 8.62125 1.33337 8V3.46666C1.33337 2.71992 1.33337 2.34656 1.4787 2.06134C1.60653 1.81046 1.8105 1.60648 2.06139 1.47865C2.3466 1.33333 2.71997 1.33333 3.46671 1.33333H8.00004C8.6213 1.33333 8.93192 1.33333 9.17695 1.43482C9.50366 1.57015 9.76322 1.82971 9.89855 2.15642C10 2.40145 10 2.71207 10 3.33333M8.13337 14.6667H12.5334C13.2801 14.6667 13.6535 14.6667 13.9387 14.5213C14.1896 14.3935 14.3936 14.1895 14.5214 13.9386C14.6667 13.6534 14.6667 13.2801 14.6667 12.5333V8.13333C14.6667 7.38659 14.6667 7.01322 14.5214 6.72801C14.3936 6.47713 14.1896 6.27315 13.9387 6.14532C13.6535 6 13.2801 6 12.5334 6H8.13337C7.38664 6 7.01327 6 6.72805 6.14532C6.47717 6.27315 6.2732 6.47713 6.14537 6.72801C6.00004 7.01322 6.00004 7.38659 6.00004 8.13333V12.5333C6.00004 13.2801 6.00004 13.6534 6.14537 13.9386C6.2732 14.1895 6.47717 14.3935 6.72805 14.5213C7.01327 14.6667 7.38664 14.6667 8.13337 14.6667Z" stroke="#0D0F0D" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <defs>
+    <clipPath id="clip0_38_1496">
+      <rect width="16" height="16" fill="white"/>
+    </clipPath>
+  </defs>
+</svg>
         </span>`;
 
             copyBtn.innerHTML = copyIcon;
@@ -270,66 +291,76 @@ function renderOverviewTab() {
 
 
 function renderImagesTab() {
-  const tbody = document.getElementById("imagesTableBody-2");
-  // clear any old rows
-  tbody.innerHTML = "";
+    const tbody = document.getElementById("imagesTableBody-2");
+    tbody.innerHTML = "";
 
-  // if no images, show a placeholder row
-  if (!imagesWithSize.length) {
-    const tr = document.createElement("tr");
-    const td = document.createElement("td");
-    td.colSpan = 4;
-    td.style.textAlign = "center";
-    td.style.padding = "10px";
-    td.textContent = "No images to display.";
-    tr.appendChild(td);
-    tbody.appendChild(tr);
-    return;
-  }
+    // Ensure columns have widths via <colgroup> and align header
+    const table = tbody.closest("table");
+    if (table && !table.querySelector("colgroup")) {
+        const cg = document.createElement("colgroup");
+        cg.innerHTML = `
+      <col class="preview-col">
+      <col>                      <!-- Alt attribute column grows -->
+      <col class="size-col">     <!-- Size column shrinks -->
+    `;
+        table.insertBefore(cg, table.firstChild);
 
-  // build a row for each image
-  imagesWithSize.forEach((item) => {
-    const tr = document.createElement("tr");
-
-    // Preview cell
-    const tdPreview = document.createElement("td");
-    const img = document.createElement("img");
-    img.src = item.src;
-    img.alt = item.alt || "";
-    img.title = item.title || "";
-    img.style.width = "64px";
-    img.style.height = "48px";
-    img.style.objectFit = "cover";
-    tdPreview.appendChild(img);
-    tr.appendChild(tdPreview);
-
-    // Alt attribute cell
-    const tdAlt = document.createElement("td");
-
-    tdAlt.textContent = item.alt || "(no alt)";
-    if (tdAlt.textContent === "(no alt)") {
-      tdAlt.classList.add("danger");
+        const sizeTh = table.querySelector("thead th:last-child");
+        if (sizeTh) sizeTh.classList.add("size-col");
+        const previewTh = table.querySelector("thead th:first-child");
+        if (previewTh) previewTh.classList.add("preview-col");
     }
 
-    tr.appendChild(tdAlt);
+    if (!imagesWithSize.length) {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 3;
+        td.style.textAlign = "center";
+        td.style.padding = "10px";
+        td.textContent = "No images to display.";
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+        return;
+    }
 
-    // Title attribute cell
-    // const tdTitle = document.createElement("td");
-    // tdTitle.textContent = item.title || "(no title)";
-    //
-    // if (tdTitle.textContent === "(no title)") {
-    //   tdTitle.classList.add("danger");
-    // }
-    // tr.appendChild(tdTitle);
+    imagesWithSize.forEach((item) => {
+        const tr = document.createElement("tr");
 
-    // Size cell
-    const tdSize = document.createElement("td");
-    tdSize.textContent = item.sizeText || "unknown";
-    tr.appendChild(tdSize);
+        // Preview cell
+        // Preview cell (bigger, no crop)
+        const tdPreview = document.createElement("td");
+        tdPreview.className = "preview-col";
 
-    tbody.appendChild(tr);
-  });
+        const box = document.createElement("div");
+        box.className = "preview-box";
+
+        const img = document.createElement("img");
+        img.src = item.src;
+        img.alt = item.alt || "";
+        img.title = item.title || "";
+
+// no inline sizing; CSS handles sizing & fitting
+        box.appendChild(img);
+        tdPreview.appendChild(box);
+        tr.appendChild(tdPreview);
+
+
+        // Alt attribute cell
+        const tdAlt = document.createElement("td");
+        tdAlt.textContent = item.alt || "(no alt)";
+        if (tdAlt.textContent === "(no alt)") tdAlt.classList.add("danger");
+        tr.appendChild(tdAlt);
+
+        // Size cell (tight, right-aligned)
+        const tdSize = document.createElement("td");
+        tdSize.className = "size-col";
+        tdSize.textContent = item.sizeText || "unknown";
+        tr.appendChild(tdSize);
+
+        tbody.appendChild(tr);
+    });
 }
+
 
 async function renderSvgTab() {
   const container = document.getElementById("svgGrid");
