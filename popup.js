@@ -644,7 +644,6 @@ async function renderSvgTab() {
       container.appendChild(item);
     });
   } catch (err) {
-    console.error("renderSvgTab error:", err);
     container.textContent = "Error fetching SVGs.";
   }
 }
@@ -719,7 +718,6 @@ async function fetchAndShowImages() {
     renderOverviewTab();
     renderImagesTab();
   } catch (err) {
-    console.error("Failed to fetch images:", err);
     if (!navigator.onLine) {
       showState("noInternet");
     } else {
@@ -728,21 +726,6 @@ async function fetchAndShowImages() {
     }
   }
 }
-
-// /* ============================
-//    ZIP helpers: dynamic JSZip loader & ZIP creation
-//    ============================ */
-// async function ensureJSZip() {
-//   if (typeof JSZip !== "undefined") return JSZip;
-//   // Try to load JSZip via CDN dynamically
-//   return new Promise((resolve, reject) => {
-//     const script = document.createElement("script");
-//     script.src = "https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js";
-//     script.onload = () => resolve(window.JSZip);
-//     script.onerror = () => reject(new Error("Failed to load JSZip"));
-//     document.head.appendChild(script);
-//   });
-// }
 
 downloadZipBtn?.addEventListener("click", async () => {
   if (!imagesWithSize.length) {
@@ -753,7 +736,6 @@ downloadZipBtn?.addEventListener("click", async () => {
   showLoader();
 
   try {
-    // const JSZipLib = await ensureJSZip();
     const zip = new JSZip();
     const folder = zip.folder("images") || zip;
 
@@ -762,14 +744,28 @@ downloadZipBtn?.addEventListener("click", async () => {
         try {
           const res = await fetch(item.src);
           const blob = await res.blob();
+
           let fileName = item.fileName || `image${idx + 1}`;
-          // de-duplicate in zip
-          let attempt = 0;
-          let candidate = fileName;
-          while (folder.files && folder.files[candidate]) {
-            attempt++;
-            candidate = `_${attempt}_${fileName}`;
+
+          // ensure filename has extension
+          let ext = getFileExtension(fileName);
+          if (!ext) {
+            ext = "jpg";
+            fileName = `${fileName}.${ext}`;
           }
+
+          // de-duplicate in ZIP
+          let candidate = fileName;
+          let attempt = 1;
+          const folderPrefix = folder.root || folder.name; // e.g. "images/"
+
+          while (folder.files && folder.files[folderPrefix + candidate]) {
+            const base = fileName.replace(/\.[^/.]+$/, "");
+            candidate = `${base}_${attempt}.${ext}`;
+            attempt++;
+          }
+
+          // add to zip
           folder.file(candidate, blob);
         } catch (e) {
           // skip
@@ -780,7 +776,6 @@ downloadZipBtn?.addEventListener("click", async () => {
     const content = await zip.generateAsync({ type: "blob" });
     downloadWithExactName(content, "images.zip");
   } catch (err) {
-    console.error("Zip creation failed:", err);
     alert("Failed to create ZIP. Make sure JSZip is reachable.");
   } finally {
     hideLoader();
@@ -821,7 +816,6 @@ downloadAllSvgsBtn?.addEventListener("click", async () => {
       return;
     }
 
-    // const JSZipLib = await ensureJSZip();
     const zip = new JSZip();
     const folder = zip.folder("svgs") || zip;
 
@@ -833,7 +827,6 @@ downloadAllSvgsBtn?.addEventListener("click", async () => {
     const content = await zip.generateAsync({ type: "blob" });
     downloadWithExactName(content, "svgs.zip");
   } catch (err) {
-    console.error("Download SVGs failed:", err);
     alert("Failed to download SVGs.");
   } finally {
     hideLoader();
