@@ -303,7 +303,7 @@ function ensureEmptyStateElements() {
     el.innerHTML = `
       <div class="state-icon">${ICON_IMAGE_NOT_FOUND}</div>
       <div class="state-title">No Image found!</div>
-      <button class="state-btn">Try Again ${ICON_RETRY}</button>
+      <button type="button" class="state-btn">Try Again ${ICON_RETRY}</button>
     `;
     imagesTableBody?.parentNode?.appendChild(el);
   }
@@ -316,7 +316,7 @@ function ensureEmptyStateElements() {
       <div class="state-icon">${ICON_NO_INTERNET}</div>
       <div class="state-title">No internet connection</div>
       <div class="state-actions">
-        <button id="retryFetchBtn" class="state-btn btn">Try Again ${ICON_RETRY}</button>
+        <button type="button" id="retryFetchBtn" class="state-btn btn">Try Again ${ICON_RETRY}</button>
       </div>
     `;
     imagesTableBody?.parentNode?.appendChild(el);

@@ -5,14 +5,13 @@
     <link rel="stylesheet" href="./styles.css" />
     <script src="./dist/jszip.js"></script>
     <script src="./dist/jszip.min.js"></script>
-    <script src="./dist/dropdown.js"></script>
   </head>
 
   <body>
     <div class="btn-container">
       <!-- Tab buttons -->
       <div class="tabs">
-        <button id="tab-overview-btn" class="tab-btn active">
+        <button type="button" id="tab-overview-btn" class="tab-btn active">
           <svg
             width="16"
             height="14"
@@ -29,7 +28,7 @@
           </svg>
           All Images
         </button>
-        <button id="tab-images-btn" class="tab-btn">
+        <button type="button" id="tab-images-btn" class="tab-btn">
           <svg
             width="14"
             height="15"
@@ -46,7 +45,7 @@
           </svg>
           Images Meta Info
         </button>
-        <button id="tab-svg-btn" class="tab-btn">
+        <button type="button" id="tab-svg-btn" class="tab-btn">
           <svg
             width="12"
             height="16"
@@ -108,7 +107,7 @@
         </div>
 
         <div class="zip-button-wrapper">
-          <button id="downloadZipBtn" class="download-zip-btn">
+          <button type="button" id="downloadZipBtn" class="download-zip-btn">
             Download All as ZIP
             <img
               src="assets/download-01.svg"
@@ -122,7 +121,7 @@
           <div class="view-toggle-wrapper">
             <div class="total-text">Asset <span></span></div>
             <div class="view-toggle">
-              <button id="viewGridBtn" class="view-btn active">
+              <button type="button" id="viewGridBtn" class="view-btn active">
                 <svg
                   width="16"
                   height="16"
@@ -139,7 +138,7 @@
                 </svg>
                 Grid View
               </button>
-              <button id="viewListBtn" class="view-btn">
+              <button type="button" id="viewListBtn" class="view-btn">
                 <svg
                   width="16"
                   height="16"
@@ -185,7 +184,7 @@
         <td class="title-cell"></td>
         <td class="size-cell"></td>
         <td class="download-cell">
-          <button class="download-btn">Download</button>
+          <button type="button" class="download-btn">Download</button>
         </td>
       </tr>
     </template>
@@ -213,7 +212,11 @@
       <!-- popup.html -->
       <div id="svgTab" class="tab-content">
         <div class="zip-button-wrapper">
-          <button id="downloadAllSvgsBtn" class="download-zip-btn">
+          <button
+            type="button"
+            id="downloadAllSvgsBtn"
+            class="download-zip-btn"
+          >
             Download all SVGs
             <img
               src="assets/download-01.svg"
