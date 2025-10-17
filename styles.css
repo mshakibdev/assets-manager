@@ -488,8 +488,21 @@ table th:last-child {
 .danger {
   color: red;
 }
-#svgTab {
+#svgTab > .svg-content {
   padding: 12px;
+}
+
+#svgTab.active {
+  gap: 0px !important;
+}
+
+#svgTab .svg-content h1 {
+  margin-bottom: 12px;
+}
+
+#svgTab .zip-button-wrapper {
+  padding: 12px;
+  background: var(--primary-50);
 }
 
 /* custom select style  */
@@ -755,4 +768,52 @@ select:disabled {
 .search-input::placeholder {
   color: #bdbdbd;
   font-weight: 400;
+}
+
+/* empty states styles */
+.state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 24px;
+  background: var(--primary-50);
+  padding: 40px;
+  border-radius: 4px;
+  width: 500px;
+  margin: 30px auto auto auto;
+}
+
+.no-internet {
+  margin-top: auto !important;
+}
+
+.state-title {
+  color: #292929;
+  text-align: center;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 40px;
+  letter-spacing: -0.48px;
+}
+
+.state-btn {
+  display: flex;
+  width: 250px;
+  height: 36px;
+  padding: 16px 32px;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  border-radius: 4px;
+  background: var(--primary-color);
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 28px;
+  letter-spacing: -0.32px;
 }
