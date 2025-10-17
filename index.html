@@ -1,157 +1,223 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
+  <head>
     <title>Assets Manager</title>
-    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="./styles.css" />
     <script src="./dist/jszip.js"></script>
     <script src="./dist/jszip.min.js"></script>
     <script src="./dist/dropdown.js"></script>
-</head>
+  </head>
 
-<body>
-<div class="btn-container">
-    <!-- Tab buttons -->
-    <div class="tabs">
+  <body>
+    <div class="btn-container">
+      <!-- Tab buttons -->
+      <div class="tabs">
         <button id="tab-overview-btn" class="tab-btn active">
-            <svg width="16" height="14" viewBox="0 0 16 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                        d="M2.84798 12.8186L7.24567 8.42091C7.50968 8.1569 7.64169 8.0249 7.79391 7.97544C7.9278 7.93193 8.07203 7.93193 8.20593 7.97544C8.35815 8.0249 8.49016 8.15691 8.75417 8.42091L13.1225 12.7893M9.33325 9L11.2457 7.08758C11.5097 6.82357 11.6417 6.69156 11.7939 6.6421C11.9278 6.5986 12.072 6.5986 12.2059 6.6421C12.3581 6.69156 12.4902 6.82357 12.7542 7.08758L14.6666 9M6.66659 5C6.66659 5.73638 6.06963 6.33333 5.33325 6.33333C4.59687 6.33333 3.99992 5.73638 3.99992 5C3.99992 4.26362 4.59687 3.66667 5.33325 3.66667C6.06963 3.66667 6.66659 4.26362 6.66659 5ZM4.53325 13H11.4666C12.5867 13 13.1467 13 13.5746 12.782C13.9509 12.5903 14.2569 12.2843 14.4486 11.908C14.6666 11.4802 14.6666 10.9201 14.6666 9.8V4.2C14.6666 3.0799 14.6666 2.51984 14.4486 2.09202C14.2569 1.71569 13.9509 1.40973 13.5746 1.21799C13.1467 1 12.5867 1 11.4666 1H4.53325C3.41315 1 2.85309 1 2.42527 1.21799C2.04895 1.40973 1.74299 1.71569 1.55124 2.09202C1.33325 2.51984 1.33325 3.0799 1.33325 4.2V9.8C1.33325 10.9201 1.33325 11.4802 1.55124 11.908C1.74299 12.2843 2.04895 12.5903 2.42527 12.782C2.85309 13 3.41315 13 4.53325 13Z"
-                        stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-            All Images
+          <svg
+            width="16"
+            height="14"
+            viewBox="0 0 16 14"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M2.84798 12.8186L7.24567 8.42091C7.50968 8.1569 7.64169 8.0249 7.79391 7.97544C7.9278 7.93193 8.07203 7.93193 8.20593 7.97544C8.35815 8.0249 8.49016 8.15691 8.75417 8.42091L13.1225 12.7893M9.33325 9L11.2457 7.08758C11.5097 6.82357 11.6417 6.69156 11.7939 6.6421C11.9278 6.5986 12.072 6.5986 12.2059 6.6421C12.3581 6.69156 12.4902 6.82357 12.7542 7.08758L14.6666 9M6.66659 5C6.66659 5.73638 6.06963 6.33333 5.33325 6.33333C4.59687 6.33333 3.99992 5.73638 3.99992 5C3.99992 4.26362 4.59687 3.66667 5.33325 3.66667C6.06963 3.66667 6.66659 4.26362 6.66659 5ZM4.53325 13H11.4666C12.5867 13 13.1467 13 13.5746 12.782C13.9509 12.5903 14.2569 12.2843 14.4486 11.908C14.6666 11.4802 14.6666 10.9201 14.6666 9.8V4.2C14.6666 3.0799 14.6666 2.51984 14.4486 2.09202C14.2569 1.71569 13.9509 1.40973 13.5746 1.21799C13.1467 1 12.5867 1 11.4666 1H4.53325C3.41315 1 2.85309 1 2.42527 1.21799C2.04895 1.40973 1.74299 1.71569 1.55124 2.09202C1.33325 2.51984 1.33325 3.0799 1.33325 4.2V9.8C1.33325 10.9201 1.33325 11.4802 1.55124 11.908C1.74299 12.2843 2.04895 12.5903 2.42527 12.782C2.85309 13 3.41315 13 4.53325 13Z"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          All Images
         </button>
         <button id="tab-images-btn" class="tab-btn">
-            <svg width="14" height="15" viewBox="0 0 14 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                        d="M11.1667 5.33325L9.16667 3.33325M9.16667 3.33325L11.1667 1.33325M9.16667 3.33325L13.1667 3.33325M6.83333 1.99992H3.7C2.5799 1.99992 2.01984 1.99992 1.59202 2.21791C1.21569 2.40965 0.909734 2.71561 0.717987 3.09194C0.5 3.51976 0.5 4.07981 0.5 5.19992V10.7999C0.5 11.92 0.5 12.4801 0.717987 12.9079C0.909734 13.2842 1.21569 13.5902 1.59202 13.7819C2.01984 13.9999 2.57989 13.9999 3.7 13.9999H9.83333C10.4533 13.9999 10.7633 13.9999 11.0176 13.9318C11.7078 13.7468 12.2469 13.2077 12.4319 12.5176C12.5 12.2632 12.5 11.9532 12.5 11.3333M5.5 5.66659C5.5 6.40297 4.90305 6.99992 4.16667 6.99992C3.43029 6.99992 2.83333 6.40297 2.83333 5.66659C2.83333 4.93021 3.43029 4.33325 4.16667 4.33325C4.90305 4.33325 5.5 4.93021 5.5 5.66659ZM8.49336 7.94535L2.8541 13.072C2.53691 13.3603 2.37831 13.5045 2.36429 13.6294C2.35213 13.7376 2.39364 13.845 2.47546 13.9169C2.56985 13.9999 2.78419 13.9999 3.21286 13.9999H9.47065C10.4301 13.9999 10.9098 13.9999 11.2866 13.8387C11.7596 13.6364 12.1365 13.2595 12.3388 12.7865C12.5 12.4097 12.5 11.93 12.5 10.9706C12.5 10.6478 12.5 10.4863 12.4647 10.336C12.4204 10.1471 12.3353 9.97016 12.2155 9.81752C12.1202 9.69605 11.9941 9.59522 11.742 9.39356L9.87722 7.90169C9.62493 7.69986 9.49878 7.59894 9.35986 7.56333C9.23742 7.53193 9.10858 7.536 8.98836 7.57505C8.85196 7.61935 8.73242 7.72802 8.49336 7.94535Z"
-                        stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-            Images Meta Info
+          <svg
+            width="14"
+            height="15"
+            viewBox="0 0 14 15"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M11.1667 5.33325L9.16667 3.33325M9.16667 3.33325L11.1667 1.33325M9.16667 3.33325L13.1667 3.33325M6.83333 1.99992H3.7C2.5799 1.99992 2.01984 1.99992 1.59202 2.21791C1.21569 2.40965 0.909734 2.71561 0.717987 3.09194C0.5 3.51976 0.5 4.07981 0.5 5.19992V10.7999C0.5 11.92 0.5 12.4801 0.717987 12.9079C0.909734 13.2842 1.21569 13.5902 1.59202 13.7819C2.01984 13.9999 2.57989 13.9999 3.7 13.9999H9.83333C10.4533 13.9999 10.7633 13.9999 11.0176 13.9318C11.7078 13.7468 12.2469 13.2077 12.4319 12.5176C12.5 12.2632 12.5 11.9532 12.5 11.3333M5.5 5.66659C5.5 6.40297 4.90305 6.99992 4.16667 6.99992C3.43029 6.99992 2.83333 6.40297 2.83333 5.66659C2.83333 4.93021 3.43029 4.33325 4.16667 4.33325C4.90305 4.33325 5.5 4.93021 5.5 5.66659ZM8.49336 7.94535L2.8541 13.072C2.53691 13.3603 2.37831 13.5045 2.36429 13.6294C2.35213 13.7376 2.39364 13.845 2.47546 13.9169C2.56985 13.9999 2.78419 13.9999 3.21286 13.9999H9.47065C10.4301 13.9999 10.9098 13.9999 11.2866 13.8387C11.7596 13.6364 12.1365 13.2595 12.3388 12.7865C12.5 12.4097 12.5 11.93 12.5 10.9706C12.5 10.6478 12.5 10.4863 12.4647 10.336C12.4204 10.1471 12.3353 9.97016 12.2155 9.81752C12.1202 9.69605 11.9941 9.59522 11.742 9.39356L9.87722 7.90169C9.62493 7.69986 9.49878 7.59894 9.35986 7.56333C9.23742 7.53193 9.10858 7.536 8.98836 7.57505C8.85196 7.61935 8.73242 7.72802 8.49336 7.94535Z"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          Images Meta Info
         </button>
         <button id="tab-svg-btn" class="tab-btn">
-            <svg width="12" height="16" viewBox="0 0 12 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                        d="M7.33341 1.51294V4.26663C7.33341 4.64 7.33341 4.82669 7.40608 4.96929C7.46999 5.09473 7.57198 5.19672 7.69742 5.26064C7.84003 5.3333 8.02671 5.3333 8.40008 5.3333H11.1538M7.33341 11.3333H3.33341M8.66675 8.66659H3.33341M11.3334 6.65874V11.4666C11.3334 12.5867 11.3334 13.1467 11.1154 13.5746C10.9237 13.9509 10.6177 14.2569 10.2414 14.4486C9.81357 14.6666 9.25352 14.6666 8.13341 14.6666H3.86675C2.74664 14.6666 2.18659 14.6666 1.75877 14.4486C1.38244 14.2569 1.07648 13.9509 0.884735 13.5746C0.666748 13.1467 0.666748 12.5867 0.666748 11.4666V4.53325C0.666748 3.41315 0.666748 2.85309 0.884735 2.42527C1.07648 2.04895 1.38244 1.74299 1.75877 1.55124C2.18659 1.33325 2.74664 1.33325 3.86675 1.33325H6.00793C6.49711 1.33325 6.7417 1.33325 6.97188 1.38851C7.17595 1.43751 7.37104 1.51831 7.54998 1.62797C7.75182 1.75166 7.92477 1.92461 8.27067 2.27051L10.3962 4.39599C10.7421 4.7419 10.915 4.91485 11.0387 5.11668C11.1484 5.29563 11.2292 5.49072 11.2782 5.69479C11.3334 5.92496 11.3334 6.16955 11.3334 6.65874Z"
-                        stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-            SVG
+          <svg
+            width="12"
+            height="16"
+            viewBox="0 0 12 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M7.33341 1.51294V4.26663C7.33341 4.64 7.33341 4.82669 7.40608 4.96929C7.46999 5.09473 7.57198 5.19672 7.69742 5.26064C7.84003 5.3333 8.02671 5.3333 8.40008 5.3333H11.1538M7.33341 11.3333H3.33341M8.66675 8.66659H3.33341M11.3334 6.65874V11.4666C11.3334 12.5867 11.3334 13.1467 11.1154 13.5746C10.9237 13.9509 10.6177 14.2569 10.2414 14.4486C9.81357 14.6666 9.25352 14.6666 8.13341 14.6666H3.86675C2.74664 14.6666 2.18659 14.6666 1.75877 14.4486C1.38244 14.2569 1.07648 13.9509 0.884735 13.5746C0.666748 13.1467 0.666748 12.5867 0.666748 11.4666V4.53325C0.666748 3.41315 0.666748 2.85309 0.884735 2.42527C1.07648 2.04895 1.38244 1.74299 1.75877 1.55124C2.18659 1.33325 2.74664 1.33325 3.86675 1.33325H6.00793C6.49711 1.33325 6.7417 1.33325 6.97188 1.38851C7.17595 1.43751 7.37104 1.51831 7.54998 1.62797C7.75182 1.75166 7.92477 1.92461 8.27067 2.27051L10.3962 4.39599C10.7421 4.7419 10.915 4.91485 11.0387 5.11668C11.1484 5.29563 11.2292 5.49072 11.2782 5.69479C11.3334 5.92496 11.3334 6.16955 11.3334 6.65874Z"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          SVG
         </button>
-    </div>
+      </div>
 
-    <div id="overviewTab" class="tab-content active">
+      <div id="overviewTab" class="tab-content active">
         <div class="controls">
-            <label>
-                <select class="custom-select" id="fileTypeFilter">
-                    <option class="option" value="all">All</option>
-                    <option value="jpg">JPG/JPEG</option>
-                    <option value="png">PNG</option>
-                    <option value="gif">GIF</option>
-                    <option value="webp">WEBP</option>
-                    <option value="svg">SVG</option>
-                </select>
-
-            </label>
-            <label>
-                <select class="custom-select" id="sortOrder">
-                    <option value="desc">Largest First</option>
-                    <option value="asc">Smallest First</option>
-                </select>
-            </label>
+          <div class="search-container">
+            <span class="search-icon"
+              ><svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+              >
+                <path
+                  d="M14 14L11.6667 11.6667M13.3333 7.66667C13.3333 10.7963 10.7963 13.3333 7.66667 13.3333C4.53705 13.3333 2 10.7963 2 7.66667C2 4.53705 4.53705 2 7.66667 2C10.7963 2 13.3333 4.53705 13.3333 7.66667Z"
+                  stroke="#BDBDBD"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                /></svg
+            ></span>
+            <input
+              type="search"
+              class="search-input"
+              placeholder="Search asset"
+            />
+          </div>
+          <label>
+            <select class="custom-select" id="fileTypeFilter">
+              <option class="option" value="all">All</option>
+              <option value="jpg">JPG/JPEG</option>
+              <option value="png">PNG</option>
+              <option value="gif">GIF</option>
+              <option value="webp">WEBP</option>
+              <option value="svg">SVG</option>
+            </select>
+          </label>
+          <label>
+            <select class="custom-select" id="sortOrder">
+              <option value="desc">Largest First</option>
+              <option value="asc">Smallest First</option>
+            </select>
+          </label>
         </div>
 
         <div class="zip-button-wrapper">
-            <button id="downloadZipBtn" class="download-zip-btn ">
-                Download All as ZIP
-                <img src="assets/download-01.svg" alt="Download Button" width="24" height="24" />
-            </button>
+          <button id="downloadZipBtn" class="download-zip-btn">
+            Download All as ZIP
+            <img
+              src="assets/download-01.svg"
+              alt="Download Button"
+              width="24"
+              height="24"
+            />
+          </button>
         </div>
         <div class="bottom-bg-wrapper">
-            <div class="view-toggle-wrapper">
-                <div class="total-text">Asset <span></span></div>
-                <div class="view-toggle">
-                    <button id="viewGridBtn" class="view-btn active">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
-                             xmlns="http://www.w3.org/2000/svg">
-                            <path
-                                    d="M2 8H14M8 2V14M5.2 2H10.8C11.9201 2 12.4802 2 12.908 2.21799C13.2843 2.40973 13.5903 2.71569 13.782 3.09202C14 3.51984 14 4.0799 14 5.2V10.8C14 11.9201 14 12.4802 13.782 12.908C13.5903 13.2843 13.2843 13.5903 12.908 13.782C12.4802 14 11.9201 14 10.8 14H5.2C4.07989 14 3.51984 14 3.09202 13.782C2.71569 13.5903 2.40973 13.2843 2.21799 12.908C2 12.4802 2 11.9201 2 10.8V5.2C2 4.07989 2 3.51984 2.21799 3.09202C2.40973 2.71569 2.71569 2.40973 3.09202 2.21799C3.51984 2 4.0799 2 5.2 2Z"
-                                    stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
-                        Grid View
-                    </button>
-                    <button id="viewListBtn" class="view-btn">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
-                             xmlns="http://www.w3.org/2000/svg">
-                            <path
-                                    d="M14 7.99992L6 7.99992M14 3.99992L6 3.99992M14 11.9999L6 11.9999M3.33333 7.99992C3.33333 8.36811 3.03486 8.66659 2.66667 8.66659C2.29848 8.66659 2 8.36811 2 7.99992C2 7.63173 2.29848 7.33325 2.66667 7.33325C3.03486 7.33325 3.33333 7.63173 3.33333 7.99992ZM3.33333 3.99992C3.33333 4.36811 3.03486 4.66659 2.66667 4.66659C2.29848 4.66659 2 4.36811 2 3.99992C2 3.63173 2.29848 3.33325 2.66667 3.33325C3.03486 3.33325 3.33333 3.63173 3.33333 3.99992ZM3.33333 11.9999C3.33333 12.3681 3.03486 12.6666 2.66667 12.6666C2.29848 12.6666 2 12.3681 2 11.9999C2 11.6317 2.29848 11.3333 2.66667 11.3333C3.03486 11.3333 3.33333 11.6317 3.33333 11.9999Z"
-                                    stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
-                        List View
-                    </button>
-                </div>
+          <div class="view-toggle-wrapper">
+            <div class="total-text">Asset <span></span></div>
+            <div class="view-toggle">
+              <button id="viewGridBtn" class="view-btn active">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M2 8H14M8 2V14M5.2 2H10.8C11.9201 2 12.4802 2 12.908 2.21799C13.2843 2.40973 13.5903 2.71569 13.782 3.09202C14 3.51984 14 4.0799 14 5.2V10.8C14 11.9201 14 12.4802 13.782 12.908C13.5903 13.2843 13.2843 13.5903 12.908 13.782C12.4802 14 11.9201 14 10.8 14H5.2C4.07989 14 3.51984 14 3.09202 13.782C2.71569 13.5903 2.40973 13.2843 2.21799 12.908C2 12.4802 2 11.9201 2 10.8V5.2C2 4.07989 2 3.51984 2.21799 3.09202C2.40973 2.71569 2.71569 2.40973 3.09202 2.21799C3.51984 2 4.0799 2 5.2 2Z"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                Grid View
+              </button>
+              <button id="viewListBtn" class="view-btn">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M14 7.99992L6 7.99992M14 3.99992L6 3.99992M14 11.9999L6 11.9999M3.33333 7.99992C3.33333 8.36811 3.03486 8.66659 2.66667 8.66659C2.29848 8.66659 2 8.36811 2 7.99992C2 7.63173 2.29848 7.33325 2.66667 7.33325C3.03486 7.33325 3.33333 7.63173 3.33333 7.99992ZM3.33333 3.99992C3.33333 4.36811 3.03486 4.66659 2.66667 4.66659C2.29848 4.66659 2 4.36811 2 3.99992C2 3.63173 2.29848 3.33325 2.66667 3.33325C3.03486 3.33325 3.33333 3.63173 3.33333 3.99992ZM3.33333 11.9999C3.33333 12.3681 3.03486 12.6666 2.66667 12.6666C2.29848 12.6666 2 12.3681 2 11.9999C2 11.6317 2.29848 11.3333 2.66667 11.3333C3.03486 11.3333 3.33333 11.6317 3.33333 11.9999Z"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                List View
+              </button>
             </div>
-            <div class="table-container">
-                <table id="imagesTable">
-                    <tbody id="imagesTableBody">
-                    <tr>
-                        <td colspan="5" style="text-align:center; padding:10px;">
-                            No images fetched yet.
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
+          </div>
+          <div class="table-container">
+            <table id="imagesTable">
+              <tbody id="imagesTableBody">
+                <tr>
+                  <td colspan="5" style="text-align: center; padding: 10px">
+                    No images fetched yet.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
+      </div>
     </div>
-</div>
 
-<template id="image-row-template">
-    <tr>
+    <template id="image-row-template">
+      <tr>
         <td class="preview-cell">
-            <div class="img-preview">
-                <img />
-                <div class="overlay"></div>
-            </div>
+          <div class="img-preview">
+            <img />
+            <div class="overlay"></div>
+          </div>
         </td>
         <td class="alt-cell"></td>
         <td class="title-cell"></td>
         <td class="size-cell"></td>
         <td class="download-cell">
-            <button class="download-btn">Download</button>
+          <button class="download-btn">Download</button>
         </td>
-    </tr>
-</template>
+      </tr>
+    </template>
 
-<div class="content-container">
-    <!-- Images tab content -->
-    <div id="imagesTab" class="tab-content">
+    <div class="content-container">
+      <!-- Images tab content -->
+      <div id="imagesTab" class="tab-content">
         <h1>Images</h1>
         <table id="imagesTable-2">
-            <thead>
+          <thead>
             <tr>
-                <th>Preview</th>
-                <th>Alt attribute</th>
-<!--                <th>Title attribute</th>-->
-                <th>Size</th>
+              <th>Preview</th>
+              <th class="alt-col">Alt attribute</th>
+              <th class="title-col">Title attribute</th>
+              <th>Size</th>
             </tr>
-            </thead>
-            <tbody id="imagesTableBody-2">
+          </thead>
+          <tbody id="imagesTableBody-2">
             <!-- rows will be dynamically inserted here -->
-            </tbody>
+          </tbody>
         </table>
+      </div>
 
-    </div>
-
-    <!--SVG tab-->
-    <!-- popup.html -->
-    <div id="svgTab" class="tab-content">
+      <!--SVG tab-->
+      <!-- popup.html -->
+      <div id="svgTab" class="tab-content">
         <h1>Inline SVGs</h1>
         <div id="svgGrid">Loading SVGs…</div>
+      </div>
     </div>
-
-</div>
-<!-- Popup content -->
-<!-- <div class="popup cc-complete">
+    <!-- Popup content -->
+    <!-- <div class="popup cc-complete">
     <img src="assets/check-circle.svg" alt="Check Circle Icon">
     Download Completed
 </div>
@@ -159,13 +225,11 @@
     <img src="assets/copy-01.svg" alt="Check Circle Icon">
     Copied
 </div> -->
-<!-- Centered loader overlay -->
-<div id="loader" class="loader-overlay" aria-hidden="true">
-    <div class="spinner"></div>
-</div>
+    <!-- Centered loader overlay -->
+    <div id="loader" class="loader-overlay" aria-hidden="true">
+      <div class="spinner"></div>
+    </div>
 
-
-<script src="popup.js"></script>
-</body>
-
+    <script src="popup.js"></script>
+  </body>
 </html>

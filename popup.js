@@ -2,41 +2,42 @@
 const loaderEl = document.getElementById("loader");
 
 const INTERACTIVE_SELECTOR =
-    'button, input, select, textarea, [role="button"], [type="button"], [type="submit"]';
+  'button, input, select, textarea, [role="button"], [type="button"], [type="submit"]';
 
 function setBusy(isBusy) {
-    document.querySelectorAll(INTERACTIVE_SELECTOR).forEach((el) => {
-        if (isBusy) {
-            if (!el.disabled) el.dataset._wasEnabled = "1"; // remember which were enabled
-            el.disabled = true;
-        } else {
-            if (el.dataset._wasEnabled === "1") {
-                el.disabled = false;
-                delete el.dataset._wasEnabled;
-            }
-        }
-    });
+  document.querySelectorAll(INTERACTIVE_SELECTOR).forEach((el) => {
+    if (isBusy) {
+      if (!el.disabled) el.dataset._wasEnabled = "1"; // remember which were enabled
+      el.disabled = true;
+    } else {
+      if (el.dataset._wasEnabled === "1") {
+        el.disabled = false;
+        delete el.dataset._wasEnabled;
+      }
+    }
+  });
 }
 
 function showLoader() {
-    loaderEl?.classList.add("show");
-    setBusy(true);
+  loaderEl?.classList.add("show");
+  setBusy(true);
 }
 
 function hideLoader() {
-    loaderEl?.classList.remove("show");
-    setBusy(false);
+  loaderEl?.classList.remove("show");
+  setBusy(false);
 }
 // Start hidden by default; we only hide after images exist
 hideLoader();
 
 function getImageDims(url) {
-    return new Promise((resolve) => {
-        const img = new Image();
-        img.onload = () => resolve({ w: img.naturalWidth || 0, h: img.naturalHeight || 0 });
-        img.onerror = () => resolve({ w: 0, h: 0 });
-        img.src = url;
-    });
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () =>
+      resolve({ w: img.naturalWidth || 0, h: img.naturalHeight || 0 });
+    img.onerror = () => resolve({ w: 0, h: 0 });
+    img.src = url;
+  });
 }
 
 function cleanFilename(filename) {
@@ -61,6 +62,12 @@ function cleanFilename(filename) {
 function getFileName(url) {
   // https://example.com/images/cool-picture.jpg?size=large#top
   try {
+    if (url.startsWith("data:image")) {
+      const mimeType = url.substring(5, url.indexOf(";")) || "png";
+      const fileExtension = mimeType.split("/")[1];
+      return `inline-bg.${fileExtension}`;
+    }
+
     const cleanUrl = url.split("?")[0].split("#")[0];
     return (
       cleanFilename(
@@ -73,6 +80,30 @@ function getFileName(url) {
 }
 
 function downloadWithExactName(blobOrUrl, fileName) {
+  if (typeof blobOrUrl === "string" && blobOrUrl.startsWith("data:image")) {
+    // Handle base64 data URI
+    const [meta, base64Data] = blobOrUrl.split(",");
+    const mimeType = meta.match(/:(.*?);/)[1]; // e.g. "image/png"
+
+    // Decode base64 → binary data
+    const binaryData = atob(base64Data);
+    const byteArray = new Uint8Array(binaryData.length);
+    for (let i = 0; i < binaryData.length; i++) {
+      byteArray[i] = binaryData.charCodeAt(i);
+    }
+
+    // Create Blob and trigger download
+    const blob = new Blob([byteArray], { type: mimeType });
+    const tempLink = document.createElement("a");
+    tempLink.href = URL.createObjectURL(blob);
+    tempLink.download = fileName || `image.${mimeType.split("/")[1]}`;
+    document.body.appendChild(tempLink);
+    tempLink.click();
+    document.body.removeChild(tempLink);
+    URL.revokeObjectURL(tempLink.href);
+    return;
+  }
+
   // If passed a Blob, create a temporary URL
   const url =
     blobOrUrl instanceof Blob ? URL.createObjectURL(blobOrUrl) : blobOrUrl;
@@ -124,131 +155,139 @@ let imagesWithSize = [];
 
 // Render function for images with current filters
 function renderOverviewTab() {
-    const fileType = document.getElementById("fileTypeFilter").value;
-    const sortOrder = document.getElementById("sortOrder").value;
+  const fileType = document.getElementById("fileTypeFilter").value;
+  const sortOrder = document.getElementById("sortOrder").value;
 
-    // -------- Filter
-    let filtered = imagesWithSize;
-    if (fileType !== "all") {
-        filtered = filtered.filter((item) => {
-            const ext = getFileExtension(item.src);
-            if (fileType === "jpg") return ext === "jpg" || ext === "jpeg";
-            return ext === fileType;
-        });
+  // -------- Filter
+  let filtered = imagesWithSize;
+  if (fileType !== "all") {
+    filtered = filtered.filter((item) => {
+      const ext = getFileExtension(item.src);
+      if (fileType === "jpg") return ext === "jpg" || ext === "jpeg";
+      return ext === fileType;
+    });
+  }
+
+  // -------- Sort (Largest First / Smallest First by size)
+  filtered = filtered
+    .slice()
+    .sort((a, b) => (sortOrder === "asc" ? a.size - b.size : b.size - a.size));
+
+  // -------- Render
+  const container = document.getElementById("imagesTableBody");
+  const isListView = container.classList.contains("view-list");
+  const isGridView = container.classList.contains("view-grid");
+
+  container.innerHTML = "";
+
+  if (!filtered.length) {
+    // (You also keep a loader for 0 images—this is just a fallback)
+    const tr = document.createElement("tr");
+    const td = document.createElement("td");
+    td.colSpan = 5;
+    td.style.textAlign = "center";
+    td.style.padding = "10px";
+    td.textContent = "No images found for the selected filter.";
+    tr.appendChild(td);
+    container.appendChild(tr);
+    return;
+  }
+
+  filtered.forEach((item) => {
+    const { src, fileName, sizeText } = item;
+    const updatedFileName = cleanFilename(fileName);
+
+    // Row wrapper
+    const row = document.createElement("div");
+    row.className = "img-item";
+
+    // Left: preview
+    const imgEl = document.createElement("img");
+    imgEl.src = src;
+    imgEl.alt = updatedFileName || "";
+    imgEl.className = "img";
+
+    // Middle: name + size
+    const content = document.createElement("div");
+    content.className = "img-content";
+
+    const contentContainer = document.createElement("div");
+    contentContainer.className = "content-container";
+
+    const label = document.createElement("div");
+    label.className = "img-label";
+    label.textContent = updatedFileName;
+
+    const sizeEl = document.createElement("div");
+    sizeEl.className = "img-size";
+    // In grid view, append "| WxH" if we have dimensions
+    if (isGridView && item.w && item.h) {
+      const sizeSpan = document.createElement("span");
+      sizeSpan.className = "file-size";
+      sizeSpan.textContent = sizeText;
+
+      const sep = document.createElement("span");
+      sep.className = "meta-sep"; // will render "|" via CSS
+
+      const dimsSpan = document.createElement("span");
+      dimsSpan.className = "file-dims";
+      dimsSpan.textContent = `${item.w}x${item.h}`;
+
+      sizeEl.append(sizeSpan, sep, dimsSpan);
+    } else {
+      // List view or no dimensions
+      const sizeSpan = document.createElement("span");
+      sizeSpan.className = "file-size";
+      sizeSpan.textContent = sizeText;
+      sizeEl.append(sizeSpan);
     }
 
-    // -------- Sort (Largest First / Smallest First by size)
-    filtered = filtered
-        .slice()
-        .sort((a, b) => (sortOrder === "asc" ? a.size - b.size : b.size - a.size));
+    contentContainer.append(label, sizeEl);
 
-    // -------- Render
-    const container = document.getElementById("imagesTableBody");
-    const isListView = container.classList.contains("view-list");
-    const isGridView = container.classList.contains("view-grid");
-
-    container.innerHTML = "";
-
-    if (!filtered.length) {
-        // (You also keep a loader for 0 images—this is just a fallback)
-        const tr = document.createElement("tr");
-        const td = document.createElement("td");
-        td.colSpan = 5;
-        td.style.textAlign = "center";
-        td.style.padding = "10px";
-        td.textContent = "No images found for the selected filter.";
-        tr.appendChild(td);
-        container.appendChild(tr);
-        return;
-    }
-
-    filtered.forEach((item) => {
-        const { src, fileName, sizeText } = item;
-        const updatedFileName = cleanFilename(fileName);
-
-        // Row wrapper
-        const row = document.createElement("div");
-        row.className = "img-item";
-
-        // Left: preview
-        const imgEl = document.createElement("img");
-        imgEl.src = src;
-        imgEl.alt = updatedFileName || "";
-        imgEl.className = "img";
-
-        // Middle: name + size
-        const content = document.createElement("div");
-        content.className = "img-content";
-
-        const contentContainer = document.createElement("div");
-        contentContainer.className = "content-container";
-
-        const label = document.createElement("div");
-        label.className = "img-label";
-        label.textContent = updatedFileName;
-
-        const sizeEl = document.createElement("div");
-        sizeEl.className = "img-size";
-        // In grid view, append "| WxH" if we have dimensions
-        if (isGridView && item.w && item.h) {
-            const sizeSpan = document.createElement("span");
-            sizeSpan.className = "file-size";
-            sizeSpan.textContent = sizeText;
-
-            const sep = document.createElement("span");
-            sep.className = "meta-sep";               // will render "|" via CSS
-
-            const dimsSpan = document.createElement("span");
-            dimsSpan.className = "file-dims";
-            dimsSpan.textContent = `${item.w}x${item.h}`;
-
-            sizeEl.append(sizeSpan, sep, dimsSpan);
-        } else {
-            // List view or no dimensions
-            const sizeSpan = document.createElement("span");
-            sizeSpan.className = "file-size";
-            sizeSpan.textContent = sizeText;
-            sizeEl.append(sizeSpan);
-        }
-
-        contentContainer.append(label, sizeEl);
-
-        // ---- Actions (right)
-        // Download (existing behavior)
-        const downloadBtn = document.createElement("button");
-        downloadBtn.className = "download-btn";
-        downloadBtn.title = "Download";
-        downloadBtn.innerHTML = `
+    // ---- Actions (right)
+    // Download (existing behavior)
+    const downloadBtn = document.createElement("button");
+    downloadBtn.className = "download-btn";
+    downloadBtn.title = "Download";
+    downloadBtn.innerHTML = `
       <span class="icon-wrap">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M7 1v7m0 0l-3-3m3 3l3-3M2 9.5v.3c0 1.2 0 1.7.3 2 .3.2.7.2 1.7.2h6c1 0 1.4 0 1.7-.2.3-.3.3-.8.3-2v-.3" stroke="#0D0F0D" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </span>`;
-        downloadBtn.onclick = () => {
-            fetch(src)
-                .then((r) => r.blob())
-                .then((blob) => downloadWithExactName(blob, cleanFilename(updatedFileName)))
-                .catch((err) => console.error("Download failed:", err));
-        };
+    downloadBtn.onclick = () => {
+      fetch(src)
+        .then((r) => r.blob())
+        .then((blob) =>
+          downloadWithExactName(blob, cleanFilename(updatedFileName))
+        )
+        .catch((err) => console.error("Download failed:", err));
+    };
 
-        // Copy URL button — **only in List View**
-        if (isListView) {
-            const actions = document.createElement("div");
-            actions.className = "img-actions"; // keep both buttons grouped on the right
+    // Copy URL button — **only in List View**
+    if (isListView) {
+      const actions = document.createElement("div");
+      actions.className = "img-actions"; // keep both buttons grouped on the right
 
-            const copyBtn = document.createElement("button");
-            copyBtn.className = "download-btn copy-btn"; // reuse same style
-            copyBtn.title = "Copy image URL";
-            copyBtn.setAttribute("aria-label", "Copy image URL");
+      const copyBtn = document.createElement("button");
+      copyBtn.className = "download-btn copy-btn"; // reuse same style
+      copyBtn.title = "Copy image URL";
+      copyBtn.setAttribute("aria-label", "Copy image URL");
 
-            const copyIcon = `
+      const copyIcon = `
         <span class="icon-wrap">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="4.25" y="1.75" width="8" height="8" rx="1.25" stroke="#0D0F0D"/>
-            <rect x="1.75" y="4.25" width="8" height="8" rx="1.25" stroke="#0D0F0D"/>
-          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+  <g clip-path="url(#clip0_48245_1551)">
+    <path d="M3.33398 10C2.71273 10 2.4021 10 2.15707 9.89855C1.83037 9.76322 1.5708 9.50366 1.43548 9.17695C1.33398 8.93192 1.33398 8.6213 1.33398 8.00004V3.46671C1.33398 2.71997 1.33398 2.3466 1.47931 2.06139C1.60714 1.8105 1.81111 1.60653 2.062 1.4787C2.34721 1.33337 2.72058 1.33337 3.46732 1.33337H8.00065C8.62191 1.33337 8.93253 1.33337 9.17756 1.43487C9.50427 1.57019 9.76383 1.82976 9.89916 2.15646C10.0007 2.40149 10.0007 2.71212 10.0007 3.33337M8.13398 14.6667H12.534C13.2807 14.6667 13.6541 14.6667 13.9393 14.5214C14.1902 14.3936 14.3942 14.1896 14.522 13.9387C14.6673 13.6535 14.6673 13.2801 14.6673 12.5334V8.13337C14.6673 7.38664 14.6673 7.01327 14.522 6.72805C14.3942 6.47717 14.1902 6.2732 13.9393 6.14537C13.6541 6.00004 13.2807 6.00004 12.534 6.00004H8.13398C7.38725 6.00004 7.01388 6.00004 6.72866 6.14537C6.47778 6.2732 6.27381 6.47717 6.14598 6.72805C6.00065 7.01327 6.00065 7.38664 6.00065 8.13337V12.5334C6.00065 13.2801 6.00065 13.6535 6.14598 13.9387C6.27381 14.1896 6.47778 14.3936 6.72866 14.5214C7.01388 14.6667 7.38725 14.6667 8.13398 14.6667Z" stroke="#0D0F0D" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <defs>
+    <clipPath id="clip0_48245_1551">
+      <rect width="16" height="16" fill="white"/>
+    </clipPath>
+  </defs>
+</svg>
         </span>`;
-            const checkIcon = `
+      const checkIcon = `
         <span class="icon-wrap">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
   <g clip-path="url(#clip0_38_1496)">
@@ -262,105 +301,113 @@ function renderOverviewTab() {
 </svg>
         </span>`;
 
-            copyBtn.innerHTML = copyIcon;
-            copyBtn.addEventListener("click", async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                try {
-                    await navigator.clipboard.writeText(src);
-                    copyBtn.innerHTML = checkIcon;      // quick visual feedback
-                    setTimeout(() => (copyBtn.innerHTML = copyIcon), 900);
-                } catch (err) {
-                    console.error("Copy URL failed:", err);
-                }
-            });
-
-            actions.append(copyBtn, downloadBtn);
-            content.append(contentContainer, actions);
-        } else {
-            // Grid view: keep your original single download button
-            content.append(contentContainer, downloadBtn);
+      copyBtn.innerHTML = copyIcon;
+      copyBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        try {
+          await navigator.clipboard.writeText(src);
+          copyBtn.innerHTML = checkIcon; // quick visual feedback
+          setTimeout(() => (copyBtn.innerHTML = copyIcon), 900);
+        } catch (err) {
+          console.error("Copy URL failed:", err);
         }
+      });
 
-        row.appendChild(imgEl);
-        row.appendChild(content);
-        container.appendChild(row);
-    });
+      actions.append(copyBtn, downloadBtn);
+      content.append(contentContainer, actions);
+    } else {
+      // Grid view: keep your original single download button
+      content.append(contentContainer, downloadBtn);
+    }
+
+    row.appendChild(imgEl);
+    row.appendChild(content);
+    container.appendChild(row);
+  });
 }
 
-
-
 function renderImagesTab() {
-    const tbody = document.getElementById("imagesTableBody-2");
-    tbody.innerHTML = "";
+  const tbody = document.getElementById("imagesTableBody-2");
+  tbody.innerHTML = "";
 
-    // Ensure columns have widths via <colgroup> and align header
-    const table = tbody.closest("table");
-    if (table && !table.querySelector("colgroup")) {
-        const cg = document.createElement("colgroup");
-        cg.innerHTML = `
+  // Ensure columns have widths via <colgroup> and align header
+  const table = tbody.closest("table");
+  if (table && !table.querySelector("colgroup")) {
+    const cg = document.createElement("colgroup");
+    cg.innerHTML = `
       <col class="preview-col">
       <col>                      <!-- Alt attribute column grows -->
       <col class="size-col">     <!-- Size column shrinks -->
     `;
-        table.insertBefore(cg, table.firstChild);
+    table.insertBefore(cg, table.firstChild);
 
-        const sizeTh = table.querySelector("thead th:last-child");
-        if (sizeTh) sizeTh.classList.add("size-col");
-        const previewTh = table.querySelector("thead th:first-child");
-        if (previewTh) previewTh.classList.add("preview-col");
-    }
+    const sizeTh = table.querySelector("thead th:last-child");
+    if (sizeTh) sizeTh.classList.add("size-col");
+    const previewTh = table.querySelector("thead th:first-child");
+    if (previewTh) previewTh.classList.add("preview-col");
+  }
 
-    if (!imagesWithSize.length) {
-        const tr = document.createElement("tr");
-        const td = document.createElement("td");
-        td.colSpan = 3;
-        td.style.textAlign = "center";
-        td.style.padding = "10px";
-        td.textContent = "No images to display.";
-        tr.appendChild(td);
-        tbody.appendChild(tr);
-        return;
-    }
+  if (!imagesWithSize.length) {
+    const tr = document.createElement("tr");
+    const td = document.createElement("td");
+    td.colSpan = 3;
+    td.style.textAlign = "center";
+    td.style.padding = "10px";
+    td.textContent = "No images to display.";
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+    return;
+  }
 
-    imagesWithSize.forEach((item) => {
-        const tr = document.createElement("tr");
+  imagesWithSize.forEach((item) => {
+    const tr = document.createElement("tr");
 
-        // Preview cell
-        // Preview cell (bigger, no crop)
-        const tdPreview = document.createElement("td");
-        tdPreview.className = "preview-col";
+    // Preview cell
+    // Preview cell (bigger, no crop)
+    const tdPreview = document.createElement("td");
+    tdPreview.className = "preview-col";
 
-        const box = document.createElement("div");
-        box.className = "preview-box";
+    const box = document.createElement("div");
+    box.className = "preview-box";
 
-        const img = document.createElement("img");
-        img.src = item.src;
-        img.alt = item.alt || "";
-        img.title = item.title || "";
+    const img = document.createElement("img");
+    img.src = item.src;
+    img.alt = item.alt || "";
+    img.title = item.title || "";
 
-// no inline sizing; CSS handles sizing & fitting
-        box.appendChild(img);
-        tdPreview.appendChild(box);
-        tr.appendChild(tdPreview);
+    // no inline sizing; CSS handles sizing & fitting
+    box.appendChild(img);
+    tdPreview.appendChild(box);
+    tr.appendChild(tdPreview);
 
+    // Alt attribute cell
+    const tdAlt = document.createElement("td");
+    const substrAlt =
+      item.alt && item.alt.length > 30
+        ? item.alt.substring(0, 30) + "..."
+        : item.alt;
+    tdAlt.textContent = substrAlt || "(no alt)";
+    tdAlt.classList.add("alt-text");
+    if (tdAlt.textContent === "(no alt)") tdAlt.classList.add("danger");
+    tr.appendChild(tdAlt);
 
-        // Alt attribute cell
-        const tdAlt = document.createElement("td");
-        tdAlt.textContent = item.alt || "(no alt)";
-        if (tdAlt.textContent === "(no alt)") tdAlt.classList.add("danger");
-        tr.appendChild(tdAlt);
+    // title attribute cell
+    const tdTitle = document.createElement("td");
+    tdTitle.textContent = item?.title || "(Missed)";
+    if (tdTitle.textContent === "(Missed)" || item.title === "(no title)")
+      tdTitle.classList.add("danger");
+    tr.appendChild(tdTitle);
 
-        // Size cell (tight, right-aligned)
-        const tdSize = document.createElement("td");
-        tdSize.className = "size-col";
-        tdSize.textContent = item.sizeText || "unknown";
-        tr.appendChild(tdSize);
+    // Size cell (tight, right-aligned)
+    const tdSize = document.createElement("td");
+    tdSize.className = "size-col";
+    tdSize.textContent = item.sizeText || "unknown";
+    tr.appendChild(tdSize);
 
-        tbody.appendChild(tr);
-    });
+    tbody.appendChild(tr);
+  });
 }
-
 
 async function renderSvgTab() {
   const container = document.getElementById("svgGrid");
@@ -422,79 +469,87 @@ async function renderSvgTab() {
 
 // Fetch data and display images
 document
-    .getElementById("tab-overview-btn")
-    .addEventListener("click", async () => {
-        // show centered spinner immediately
-        showLoader();
+  .getElementById("tab-overview-btn")
+  .addEventListener("click", async () => {
+    // show centered spinner immediately
+    showLoader();
 
-        // optional: clear previous results area so the spinner is visually centered
-        const tbody = document.getElementById("imagesTableBody");
-        if (tbody) tbody.innerHTML = "";
+    // optional: clear previous results area so the spinner is visually centered
+    const tbody = document.getElementById("imagesTableBody");
+    if (tbody) tbody.innerHTML = "";
 
-        try {
-            let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    try {
+      let [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
 
-            // If the active page is a Chrome error page (e.g., offline “dino”), treat as 0 images
-            if (tab?.url?.startsWith?.("chrome-error://")) {
-                // Keep the loader visible and exit (requirement: loader stays when images = 0)
-                return;
-            }
+      // If the active page is a Chrome error page (e.g., offline “dino”), treat as 0 images
+      if (tab?.url?.startsWith?.("chrome-error://")) {
+        // Keep the loader visible and exit (requirement: loader stays when images = 0)
+        return;
+      }
 
-            // Inject content script (safe to call even if already injected)
-            await new Promise((resolve, reject) => {
-                chrome.scripting.executeScript(
-                    { target: { tabId: tab.id }, files: ["contentScript.js"] },
-                    () => (chrome.runtime.lastError ? reject(chrome.runtime.lastError) : resolve())
-                );
-            });
+      // Inject content script (safe to call even if already injected)
+      await new Promise((resolve, reject) => {
+        chrome.scripting.executeScript(
+          { target: { tabId: tab.id }, files: ["contentScript.js"] },
+          () =>
+            chrome.runtime.lastError
+              ? reject(chrome.runtime.lastError)
+              : resolve()
+        );
+      });
 
-            // Request image data
-            const response = await new Promise((resolve) => {
-                chrome.tabs.sendMessage(tab.id, { action: "getImageData" }, (res) => resolve(res));
-            });
+      // Request image data
+      const response = await new Promise((resolve) => {
+        chrome.tabs.sendMessage(tab.id, { action: "getImageData" }, (res) =>
+          resolve(res)
+        );
+      });
 
-            const images = (response && response.images) || [];
+      const images = (response && response.images) || [];
 
-            // === Key requirement: if 0 images, keep loader visible and stop ===
-            if (!images.length) {
-                return; // spinner stays centered; no message shown
-            }
+      // === Key requirement: if 0 images, keep loader visible and stop ===
+      if (!images.length) {
+        return; // spinner stays centered; no message shown
+      }
 
-            // You already compute sizes + build imagesWithSize in your current code.
-            // We'll reuse your existing functions and rendering as-is:
+      // You already compute sizes + build imagesWithSize in your current code.
+      // We'll reuse your existing functions and rendering as-is:
 
-            const sizes = await Promise.all(
-                images.map((imgObj) => getImageSize(imgObj.src).catch(() => 0))
-            );
+      const sizes = await Promise.all(
+        images.map((imgObj) => getImageSize(imgObj.src).catch(() => 0))
+      );
 
-            // compute dimensions (natural width/height)
-            const dims = await Promise.all(
-                images.map((imgObj) => getImageDims(imgObj.src))
-            );
+      // compute dimensions (natural width/height)
+      const dims = await Promise.all(
+        images.map((imgObj) => getImageDims(imgObj.src))
+      );
 
-            imagesWithSize = images.map((imgObj, i) => ({
-                src: imgObj.src,
-                alt: imgObj.alt,
-                title: imgObj.title,
-                fileName: getFileName(imgObj.src),
-                size: sizes[i],
-                sizeText: formatSize(sizes[i]),
-                w: dims[i].w,
-                h: dims[i].h
-            }));
+      imagesWithSize = images.map((imgObj, i) => ({
+        src: imgObj.src,
+        alt: imgObj.alt,
+        title: imgObj.title,
+        fileName: getFileName(imgObj.src),
+        size: sizes[i],
+        sizeText: formatSize(sizes[i]),
+        w: dims[i].w,
+        h: dims[i].h,
+      }));
 
-            // Hide spinner now that we have images
-            hideLoader();
+      // Hide spinner now that we have images
+      hideLoader();
 
-            // Use your existing render functions
-            renderOverviewTab();
-            renderImagesTab();
-        } catch (_) {
-            // On any failure (including offline), behave like images === 0:
-            // do nothing here so the loader stays visible and centered.
-            return;
-        }
-    });
+      // Use your existing render functions
+      renderOverviewTab();
+      renderImagesTab();
+    } catch (_) {
+      // On any failure (including offline), behave like images === 0:
+      // do nothing here so the loader stays visible and centered.
+      return;
+    }
+  });
 
 document
   .getElementById("downloadZipBtn")
@@ -613,8 +668,14 @@ function setView(mode) {
 }
 
 // button handlers
-gridBtn.addEventListener("click", () => { setView("grid"); renderOverviewTab(); });
-listBtn.addEventListener("click", () => { setView("list"); renderOverviewTab(); });
+gridBtn.addEventListener("click", () => {
+  setView("grid");
+  renderOverviewTab();
+});
+listBtn.addEventListener("click", () => {
+  setView("list");
+  renderOverviewTab();
+});
 
 // initialize default
 setView("grid");
