@@ -123,6 +123,9 @@ const viewGridBtn = document.getElementById("viewGridBtn");
 const viewListBtn = document.getElementById("viewListBtn");
 const searchInput = document.querySelector(".search-input");
 const gridContainer = imagesTableBody; // used for view toggles
+const fileSizeCount = document.querySelector(".file-size-count");
+const svgFileSizeCount = document.querySelector(".svg-file-size-count");
+const htmlSizeCount = document.querySelector(".html-size-count");
 
 // In-memory image list (augmented with sizes/dimensions)
 let imagesWithSize = [];
@@ -289,6 +292,46 @@ function getImageDims(url) {
     img.onerror = () => resolve({ w: 0, h: 0 });
     img.src = url;
   });
+}
+
+/* ============================
+   Size calculations
+   ============================ */
+function calculateTotalImageSize() {
+  const total = imagesWithSize.reduce((sum, img) => sum + (img.size || 0), 0);
+  if (fileSizeCount) fileSizeCount.textContent = `(${formatSize(total)})`;
+  return total;
+}
+
+async function calculateTotalSvgSize(svgs = []) {
+  const total = svgs.reduce(
+    (sum, svgCode) => sum + new Blob([svgCode]).size,
+    0
+  );
+  if (svgFileSizeCount) svgFileSizeCount.textContent = `(${formatSize(total)})`;
+  return total;
+}
+
+async function calculateHtmlPageSize() {
+  try {
+    const [tab] = await chrome.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
+    if (!tab?.url) return 0;
+
+    const res = await fetch(tab.url);
+    const text = await res.text();
+    const size = new Blob([text]).size;
+
+    if (htmlSizeCount)
+      htmlSizeCount.textContent = `(HTML Size: ${formatSize(size)})`;
+
+    return size;
+  } catch (err) {
+    console.warn("Failed to get HTML page size:", err);
+    return 0;
+  }
 }
 
 /* ============================
@@ -643,6 +686,8 @@ async function renderSvgTab() {
       item.append(preview, svgBtnContainer);
       container.appendChild(item);
     });
+
+    await calculateTotalSvgSize(svgs);
   } catch (err) {
     container.textContent = "Error fetching SVGs.";
   }
@@ -717,6 +762,12 @@ async function fetchAndShowImages() {
     hideLoader();
     renderOverviewTab();
     renderImagesTab();
+
+    // Update total image size counter
+    calculateTotalImageSize();
+
+    // Also update HTML page size after loading images
+    calculateHtmlPageSize();
   } catch (err) {
     if (!navigator.onLine) {
       showState("noInternet");
