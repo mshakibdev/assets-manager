@@ -294,11 +294,49 @@ function getImageDims(url) {
   });
 }
 
+function isSvgWhite(svgString) {
+  if (!svgString) return false;
+
+  const normalized = svgString.toLowerCase();
+
+  // All acceptable "white" values
+  const whiteValues = ["white", "#fff", "#ffffff", "rgb(255,255,255)"];
+
+  // Regex to catch fill="", stroke="", color=""
+  const attrRegex = /(fill|stroke|color)\s*=\s*"([^"]+)"/g;
+  let match;
+  while ((match = attrRegex.exec(normalized)) !== null) {
+    const value = match[2].trim();
+    if (whiteValues.includes(value)) return true;
+  }
+
+  // Regex for styles like: style="fill:white; stroke:#fff;"
+  const styleRegex = /style\s*=\s*"([^"]+)"/g;
+  let styleMatch;
+  while ((styleMatch = styleRegex.exec(normalized)) !== null) {
+    const style = styleMatch[1];
+
+    // Extract CSS pairs: fill: white, stroke: #fff, color: #ffffff
+    const cssPairs = style.split(";");
+    for (const pair of cssPairs) {
+      const [key, val] = pair.split(":").map((s) => s.trim());
+      if (
+        ["fill", "stroke", "color"].includes(key) &&
+        whiteValues.includes(val)
+      ) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 /* ============================
    Size calculations
    ============================ */
-function calculateTotalImageSize() {
-  const total = imagesWithSize.reduce((sum, img) => sum + (img.size || 0), 0);
+function calculateTotalImageSize(images) {
+  const total = images?.reduce((sum, img) => sum + (img.size || 0), 0);
   if (fileSizeCount) fileSizeCount.textContent = `(${formatSize(total)})`;
   return total;
 }
@@ -532,6 +570,9 @@ function renderOverviewTab() {
   // Clear container before rendering
   imagesTableBody.innerHTML = "";
 
+  // Update total image size counter
+  calculateTotalImageSize(filtered);
+
   if (!filtered.length) {
     // show friendly empty state (not loader)
     showState("noImages");
@@ -662,6 +703,10 @@ async function renderSvgTab() {
       preview.className = "svg-preview";
       preview.innerHTML = code;
 
+      if (isSvgWhite(code)) {
+        preview.style.background = "#231f2040";
+      }
+
       const copyBtn = document.createElement("button");
       copyBtn.textContent = "Copy";
       copyBtn.onclick = () => {
@@ -763,11 +808,8 @@ async function fetchAndShowImages() {
     renderOverviewTab();
     renderImagesTab();
 
-    // Update total image size counter
-    calculateTotalImageSize();
-
     // Also update HTML page size after loading images
-    calculateHtmlPageSize();
+    // calculateHtmlPageSize();
   } catch (err) {
     if (!navigator.onLine) {
       showState("noInternet");
